@@ -1,0 +1,624 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "🎬 Cine Gama API",
+    "description": "Sistema de gerenciamento de cinema com filmes, sessões e venda de ingressos",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://cine-gama-api.herokuapp.com",
+      "description": "Servidor de produção do Cine Gama"
+    },
+    {
+      "url": "http://127.0.0.1:8000",
+      "description": "Servidor local de desenvolvimento"
+    }
+  ],
+  "paths": {
+    "/filmes": {
+      "get": {
+        "summary": "Listar todos os filmes em cartaz",
+        "description": "Retorna uma lista de todos os filmes disponíveis no cinema com informações detalhadas como título, descrição, gênero, duração, classificação etária, diretor e ano de lançamento.",
+        "operationId": "listar_filmes_filmes_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/FilmeOut"
+                  },
+                  "type": "array",
+                  "title": "Response Listar Filmes Filmes Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sessoes": {
+      "get": {
+        "summary": "Listar todas as sessões disponíveis",
+        "description": "Retorna uma lista de todas as sessões de cinema disponíveis, incluindo informações do filme, sala, horários, preço e disponibilidade de assentos.",
+        "operationId": "listar_sessoes_sessoes_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SessaoOut"
+                  },
+                  "type": "array",
+                  "title": "Response Listar Sessoes Sessoes Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sessoes/{filme_id}": {
+      "get": {
+        "summary": "Listar sessões de um filme específico",
+        "description": "Retorna todas as sessões disponíveis para um filme específico, incluindo horários, salas e disponibilidade de assentos.",
+        "operationId": "listar_sessoes_filme_sessoes__filme_id__get",
+        "parameters": [
+          {
+            "name": "filme_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Filme Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SessaoOut"
+                  },
+                  "title": "Response Listar Sessoes Filme Sessoes  Filme Id  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/comprar_ingresso": {
+      "post": {
+        "summary": "Comprar ingresso para uma sessão",
+        "description": "Compra um ingresso para uma sessão específica. Requer cliente_id, nome_cliente e sessao_id. Se a sessão tiver assentos disponíveis e o cliente existir, um novo ingresso é criado e o número de assentos disponíveis é decrementado. Retorna os detalhes do ingresso.",
+        "operationId": "comprar_ingresso_comprar_ingresso_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IngressoIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IngressoOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ingressos/{cliente_id}": {
+      "get": {
+        "summary": "Listar todos os ingressos de um cliente",
+        "description": "Retorna todos os ingressos de um cliente específico por cliente_id. Inclui status do ingresso, data de compra e número do assento.",
+        "operationId": "listar_ingressos_cliente_ingressos__cliente_id__get",
+        "parameters": [
+          {
+            "name": "cliente_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Cliente Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/IngressoOut"
+                  },
+                  "title": "Response Listar Ingressos Cliente Ingressos  Cliente Id  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cancelar_ingresso/{ingresso_id}": {
+      "post": {
+        "summary": "Cancelar um ingresso",
+        "description": "Cancela um ingresso existente pelo ingresso_id. Se o ingresso estiver ativo, seu status é alterado para 'cancelado' e o número de assentos disponíveis da sessão associada é incrementado. Retorna os detalhes do ingresso atualizado.",
+        "operationId": "cancelar_ingresso_cancelar_ingresso__ingresso_id__post",
+        "parameters": [
+          {
+            "name": "ingresso_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Ingresso Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IngressoOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cadastrar_cliente": {
+      "post": {
+        "summary": "Cadastrar um novo cliente",
+        "description": "Cadastra um novo cliente com nome, email único e telefone opcional. Retorna os dados do cliente criado.",
+        "operationId": "cadastrar_cliente_cadastrar_cliente_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClienteIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClienteOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/buscar_cliente": {
+      "get": {
+        "summary": "Buscar cliente por nome e email",
+        "description": "Busca informações de um cliente (incluindo cliente_id) fornecendo nome e email. Retorna 404 se não encontrado.",
+        "operationId": "buscar_cliente_buscar_cliente_get",
+        "parameters": [
+          {
+            "name": "nome",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Nome"
+            }
+          },
+          {
+            "name": "email",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Email"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClienteOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reset_clientes": {
+      "delete": {
+        "summary": "Deletar todos os clientes e seus ingressos",
+        "description": "Deleta todos os Ingressos e Clientes do banco de dados, mantendo Filmes e Sessões intactos.",
+        "operationId": "reset_clientes_reset_clientes_delete",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ClienteIn": {
+        "properties": {
+          "nome": {
+            "type": "string",
+            "title": "Nome"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "telefone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Telefone"
+          }
+        },
+        "type": "object",
+        "required": [
+          "nome",
+          "email"
+        ],
+        "title": "ClienteIn"
+      },
+      "ClienteOut": {
+        "properties": {
+          "cliente_id": {
+            "type": "integer",
+            "title": "Cliente Id"
+          },
+          "nome": {
+            "type": "string",
+            "title": "Nome"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "telefone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Telefone"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cliente_id",
+          "nome",
+          "email"
+        ],
+        "title": "ClienteOut"
+      },
+      "FilmeOut": {
+        "properties": {
+          "filme_id": {
+            "type": "integer",
+            "title": "Filme Id"
+          },
+          "titulo": {
+            "type": "string",
+            "title": "Titulo"
+          },
+          "descricao": {
+            "type": "string",
+            "title": "Descricao"
+          },
+          "genero": {
+            "type": "string",
+            "title": "Genero"
+          },
+          "duracao_minutos": {
+            "type": "integer",
+            "title": "Duracao Minutos"
+          },
+          "classificacao_etaria": {
+            "type": "string",
+            "title": "Classificacao Etaria"
+          },
+          "diretor": {
+            "type": "string",
+            "title": "Diretor"
+          },
+          "ano_lancamento": {
+            "type": "integer",
+            "title": "Ano Lancamento"
+          }
+        },
+        "type": "object",
+        "required": [
+          "filme_id",
+          "titulo",
+          "descricao",
+          "genero",
+          "duracao_minutos",
+          "classificacao_etaria",
+          "diretor",
+          "ano_lancamento"
+        ],
+        "title": "FilmeOut"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "IngressoIn": {
+        "properties": {
+          "cliente_id": {
+            "type": "integer",
+            "title": "Cliente Id"
+          },
+          "nome_cliente": {
+            "type": "string",
+            "title": "Nome Cliente"
+          },
+          "sessao_id": {
+            "type": "integer",
+            "title": "Sessao Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cliente_id",
+          "nome_cliente",
+          "sessao_id"
+        ],
+        "title": "IngressoIn"
+      },
+      "IngressoOut": {
+        "properties": {
+          "ingresso_id": {
+            "type": "integer",
+            "title": "Ingresso Id"
+          },
+          "cliente_id": {
+            "type": "integer",
+            "title": "Cliente Id"
+          },
+          "sessao_id": {
+            "type": "integer",
+            "title": "Sessao Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "data_compra": {
+            "type": "string",
+            "title": "Data Compra"
+          },
+          "numero_assento": {
+            "type": "string",
+            "title": "Numero Assento"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ingresso_id",
+          "cliente_id",
+          "sessao_id",
+          "status",
+          "data_compra",
+          "numero_assento"
+        ],
+        "title": "IngressoOut"
+      },
+      "SessaoOut": {
+        "properties": {
+          "sessao_id": {
+            "type": "integer",
+            "title": "Sessao Id"
+          },
+          "filme_id": {
+            "type": "integer",
+            "title": "Filme Id"
+          },
+          "titulo_filme": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Titulo Filme"
+          },
+          "sala": {
+            "type": "string",
+            "title": "Sala"
+          },
+          "horario_inicio": {
+            "type": "string",
+            "title": "Horario Inicio"
+          },
+          "horario_fim": {
+            "type": "string",
+            "title": "Horario Fim"
+          },
+          "data_sessao": {
+            "type": "string",
+            "title": "Data Sessao"
+          },
+          "preco_ingresso": {
+            "type": "integer",
+            "title": "Preco Ingresso"
+          },
+          "assentos_disponiveis": {
+            "type": "integer",
+            "title": "Assentos Disponiveis"
+          },
+          "assentos_total": {
+            "type": "integer",
+            "title": "Assentos Total"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sessao_id",
+          "filme_id",
+          "sala",
+          "horario_inicio",
+          "horario_fim",
+          "data_sessao",
+          "preco_ingresso",
+          "assentos_disponiveis",
+          "assentos_total"
+        ],
+        "title": "SessaoOut"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}
