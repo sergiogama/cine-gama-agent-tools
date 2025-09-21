@@ -116,12 +116,183 @@ class WatsonCineGamaIntegration {
         }
         
         this.isSending = true;
-        console.log('📤 Enviando para Watson:', message);
+        console.log('📤 Preparando mensagem para Watson:', message);
         
-        // Aguarda um pouco para garantir que o chat esteja carregado
+        // Estratégia simples e confiável
+        this.copyMessageAndNotify(message);
+        
+        this.isSending = false;
+    }
+
+    copyMessageAndNotify(message) {
+        try {
+            // Copia para clipboard
+            navigator.clipboard.writeText(message).then(() => {
+                console.log('📋 Mensagem copiada para clipboard');
+                this.showCopySuccessNotification(message);
+            }).catch(() => {
+                // Fallback para browsers sem clipboard API
+                this.fallbackCopyToClipboard(message);
+                this.showCopySuccessNotification(message);
+            });
+        } catch (error) {
+            console.error('❌ Erro ao copiar:', error);
+            this.showMessageDisplay(message);
+        }
+    }
+
+    fallbackCopyToClipboard(text) {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.opacity = '0';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        
+        try {
+            document.execCommand('copy');
+            console.log('📋 Mensagem copiada via fallback');
+        } catch (err) {
+            console.log('⚠️ Falha na cópia via fallback');
+        }
+        
+        document.body.removeChild(textArea);
+    }
+
+    showCopySuccessNotification(message) {
+        // Remove notificações anteriores
+        const existing = document.querySelector('.watson-message-notification');
+        if (existing) {
+            existing.remove();
+        }
+
+        const notification = document.createElement('div');
+        notification.className = 'watson-message-notification';
+        notification.innerHTML = `
+            <div style="
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 30px;
+                border-radius: 15px;
+                z-index: 10000;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                max-width: 500px;
+                text-align: center;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                animation: slideInScale 0.4s ease;
+            ">
+                <div style="font-size: 24px; margin-bottom: 15px;">🤖✨</div>
+                <div style="font-size: 18px; font-weight: bold; margin-bottom: 15px;">
+                    Mensagem Preparada!
+                </div>
+                <div style="
+                    background: rgba(255,255,255,0.15);
+                    padding: 15px;
+                    border-radius: 10px;
+                    margin: 15px 0;
+                    font-style: italic;
+                    line-height: 1.4;
+                ">
+                    "${message}"
+                </div>
+                <div style="font-size: 14px; opacity: 0.9; margin-bottom: 20px;">
+                    📋 Mensagem copiada! Agora é só colar no chat:
+                </div>
+                <div style="
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 10px;
+                    background: rgba(255,255,255,0.2);
+                    padding: 10px 15px;
+                    border-radius: 8px;
+                    font-weight: bold;
+                ">
+                    <span style="font-size: 20px;">⌨️</span>
+                    <span>Ctrl+V (ou Cmd+V no Mac)</span>
+                </div>
+                <button onclick="this.parentElement.parentElement.remove()" style="
+                    position: absolute;
+                    top: 10px;
+                    right: 15px;
+                    background: none;
+                    border: none;
+                    color: white;
+                    font-size: 24px;
+                    cursor: pointer;
+                    opacity: 0.7;
+                    transition: opacity 0.2s;
+                " onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">×</button>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Auto-remove após 10 segundos
         setTimeout(() => {
-            this.sendMessageToWatsonChat(message);
-        }, 1000);
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 10000);
+    }
+
+    showMessageDisplay(message) {
+        const notification = document.createElement('div');
+        notification.innerHTML = `
+            <div style="
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #f44336;
+                color: white;
+                padding: 20px;
+                border-radius: 10px;
+                z-index: 9999;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                max-width: 350px;
+                font-size: 14px;
+                line-height: 1.5;
+            ">
+                <div style="font-weight: bold; margin-bottom: 10px;">
+                    🤖 Mensagem para o Watson:
+                </div>
+                <div style="
+                    background: rgba(255,255,255,0.1);
+                    padding: 10px;
+                    border-radius: 5px;
+                    margin: 10px 0;
+                    font-style: italic;
+                ">
+                    "${message}"
+                </div>
+                <div style="font-size: 12px; opacity: 0.9;">
+                    Copie esta mensagem e cole no chat do Watson
+                </div>
+                <button onclick="this.parentElement.parentElement.remove()" style="
+                    position: absolute;
+                    top: 5px;
+                    right: 10px;
+                    background: none;
+                    border: none;
+                    color: white;
+                    font-size: 18px;
+                    cursor: pointer;
+                ">×</button>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 8000);
     }
 
     sendMessageToWatsonChat(message) {
@@ -834,6 +1005,17 @@ class WatsonCineGamaIntegration {
                 font-size: 0.8rem;
                 white-space: nowrap;
                 z-index: 10;
+            }
+            
+            @keyframes slideInScale {
+                0% { 
+                    opacity: 0;
+                    transform: translate(-50%, -50%) scale(0.8);
+                }
+                100% { 
+                    opacity: 1;
+                    transform: translate(-50%, -50%) scale(1);
+                }
             }
             
             @keyframes pulse {

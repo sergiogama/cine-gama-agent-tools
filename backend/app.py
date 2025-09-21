@@ -45,6 +45,21 @@ class SessaoOut(BaseModel):
     class Config:
         orm_mode = True
 
+class FilmeComSessoesOut(BaseModel):
+    filme_id: int
+    titulo: str
+    descricao: str
+    genero: str
+    duracao_minutos: int
+    classificacao_etaria: str
+    diretor: str
+    ano_lancamento: int
+    emoji_poster: str = "🎬"  # Campo para emoji do poster
+    rating: float = 0.0  # Campo para rating
+    sessoes: list[SessaoOut] = []
+    class Config:
+        orm_mode = True
+
 class ClienteIn(BaseModel):
     nome: str
     email: str
@@ -141,6 +156,80 @@ def listar_sessoes_filme(filme_id: int, db: Session = Depends(get_db)):
             "assentos_total": sessao.assentos_total
         }
         resultado.append(SessaoOut(**sessao_dict))
+    
+    return resultado
+
+@app.get(
+    "/filmes-com-sessoes",
+    response_model=list[FilmeComSessoesOut],
+    summary="Listar filmes com suas sessões",
+    description="Retorna todos os filmes em cartaz com suas respectivas sessões disponíveis. Ideal para exibir na página principal do cinema."
+)
+def listar_filmes_com_sessoes(db: Session = Depends(get_db)):
+    filmes = db.query(Filme).all()
+    resultado = []
+    
+    # Mapeamento de emojis para gêneros
+    emoji_map = {
+        "Drama": "🎭",
+        "Crime": "🏙️",
+        "Comédia": "😂",
+        "Ação": "🦸‍♂️",
+        "Aventura": "🗡️",
+        "Thriller": "🔍",
+        "Suspense": "🕵️",
+        "Romance": "❤️",
+        "Ficção Científica": "🚀",
+        "Terror": "👻",
+        "Animação": "🎨",
+        "Musical": "🎵"
+    }
+    
+    # Ratings fictícios para os filmes (em produção, viria de uma tabela de avaliações)
+    ratings_map = {
+        "Cidade de Deus": 8.6,
+        "Central do Brasil": 8.0,
+        "O Auto da Compadecida": 8.7,
+        "Parasita": 8.5,
+        "Vingadores: Ultimato": 8.4,
+        "Coringa": 8.4
+    }
+    
+    for filme in filmes:
+        # Buscar sessões do filme
+        sessoes = db.query(Sessao).filter(Sessao.filme_id == filme.filme_id).all()
+        sessoes_formatadas = []
+        
+        for sessao in sessoes:
+            sessao_dict = {
+                "sessao_id": sessao.sessao_id,
+                "filme_id": sessao.filme_id,
+                "titulo_filme": filme.titulo,
+                "sala": sessao.sala,
+                "horario_inicio": sessao.horario_inicio,
+                "horario_fim": sessao.horario_fim,
+                "data_sessao": sessao.data_sessao,
+                "preco_ingresso": sessao.preco_ingresso,
+                "assentos_disponiveis": sessao.assentos_disponiveis,
+                "assentos_total": sessao.assentos_total
+            }
+            sessoes_formatadas.append(SessaoOut(**sessao_dict))
+        
+        # Montar filme com sessões
+        filme_dict = {
+            "filme_id": filme.filme_id,
+            "titulo": filme.titulo,
+            "descricao": filme.descricao,
+            "genero": filme.genero,
+            "duracao_minutos": filme.duracao_minutos,
+            "classificacao_etaria": filme.classificacao_etaria,
+            "diretor": filme.diretor,
+            "ano_lancamento": filme.ano_lancamento,
+            "emoji_poster": emoji_map.get(filme.genero, "🎬"),
+            "rating": ratings_map.get(filme.titulo, 7.5),
+            "sessoes": sessoes_formatadas
+        }
+        resultado.append(FilmeComSessoesOut(**filme_dict))
     
     return resultado
 
