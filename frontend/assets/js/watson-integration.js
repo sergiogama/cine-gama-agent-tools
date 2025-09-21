@@ -127,19 +127,52 @@ class WatsonCineGamaIntegration {
             // Primeiro, abre o chat (sem reinicializar)
             this.openWatsonChat();
             
-            // Aguarda um pouco e tenta enviar usando o método direto
-            setTimeout(() => {
-                console.log('🚀 Iniciando processo de envio de mensagem...');
+            // Aguarda o Watson estar completamente carregado
+            this.waitForWatsonReady(() => {
+                console.log('🚀 Watson está pronto, iniciando envio de mensagem...');
                 this.waitForChatAndSendMessage(message);
-            }, 1000);
+            });
             
         } catch (error) {
             console.error('❌ Erro ao enviar mensagem:', error);
             // Fallback final
             setTimeout(() => {
                 this.simulateUserInput(message);
-            }, 2000);
+            }, 3000);
         }
+    }
+    
+    // Aguarda o Watson estar completamente carregado
+    waitForWatsonReady(callback) {
+        console.log('⏳ Aguardando Watson estar completamente carregado...');
+        
+        let attempts = 0;
+        const maxAttempts = 20;
+        const checkInterval = 500;
+        
+        const checkWatsonReady = () => {
+            attempts++;
+            console.log(`🔍 Verificando Watson ${attempts}/${maxAttempts}...`);
+            
+            // Verifica se o Watson está carregado e o chat está visível
+            const chatVisible = document.querySelector('#root iframe, #root [class*="chat"], #root [data-testid*="chat"]');
+            const wxoLoaderReady = window.wxoLoader && typeof window.wxoLoader === 'object';
+            
+            if (chatVisible && wxoLoaderReady) {
+                console.log('✅ Watson está carregado e visível!');
+                setTimeout(callback, 1000); // Aguarda mais um pouco para estabilizar
+                return;
+            }
+            
+            if (attempts < maxAttempts) {
+                setTimeout(checkWatsonReady, checkInterval);
+            } else {
+                console.log('⚠️ Timeout: Watson não ficou pronto, continuando mesmo assim...');
+                callback();
+            }
+        };
+        
+        checkWatsonReady();
     }
 
     // Aguarda o chat estar pronto e envia mensagem
@@ -205,51 +238,39 @@ class WatsonCineGamaIntegration {
             console.log('📝 Enviando mensagem diretamente para input:', message);
             console.log('🎯 Input element encontrado:', inputElement);
             
-            // Foca no input
-            inputElement.focus();
-            console.log('👆 Focado no input');
-            
             // Limpa o campo primeiro
             inputElement.value = '';
+            inputElement.focus();
             
-            // Define o valor
-            inputElement.value = message;
-            console.log('✏️ Valor definido no input:', inputElement.value);
+            // Simula digitação caractere por caractere (mais realista)
+            let currentText = '';
+            let charIndex = 0;
             
-            // Dispara eventos necessários
-            inputElement.dispatchEvent(new Event('input', { bubbles: true }));
-            inputElement.dispatchEvent(new Event('change', { bubbles: true }));
-            console.log('📡 Eventos disparados');
-            
-            // Aguarda um pouco antes de tentar enviar
-            setTimeout(() => {
-                // Procura botão de envio
-                const sendButton = this.findSendButton();
-                if (sendButton) {
-                    console.log('🚀 Clicando no botão de envio:', sendButton);
-                    sendButton.click();
-                } else {
-                    // Simula Enter
-                    console.log('⌨️ Simulando pressionar Enter');
-                    inputElement.dispatchEvent(new KeyboardEvent('keydown', {
-                        key: 'Enter',
-                        code: 'Enter',
-                        keyCode: 13,
-                        bubbles: true
+            const typeCharacter = () => {
+                if (charIndex < message.length) {
+                    currentText += message[charIndex];
+                    inputElement.value = currentText;
+                    
+                    // Dispara eventos para cada caractere
+                    inputElement.dispatchEvent(new Event('input', { bubbles: true }));
+                    inputElement.dispatchEvent(new InputEvent('input', { 
+                        bubbles: true, 
+                        data: message[charIndex],
+                        inputType: 'insertText'
                     }));
                     
-                    inputElement.dispatchEvent(new KeyboardEvent('keypress', {
-                        key: 'Enter',
-                        code: 'Enter',
-                        keyCode: 13,
-                        bubbles: true
-                    }));
+                    charIndex++;
+                    setTimeout(typeCharacter, 50); // 50ms entre cada caractere
+                } else {
+                    // Terminou de digitar, agora envia
+                    console.log('✏️ Digitação completa:', inputElement.value);
+                    setTimeout(() => {
+                        this.sendTypedMessage(inputElement);
+                    }, 200);
                 }
-                
-                console.log('✅ Tentativa de envio concluída!');
-                console.log('🔍 Valor atual do input após envio:', inputElement.value);
-                
-            }, 500);
+            };
+            
+            typeCharacter();
             
         } catch (error) {
             console.error('❌ Erro ao enviar mensagem diretamente:', error);
@@ -257,26 +278,146 @@ class WatsonCineGamaIntegration {
         }
     }
     
+    // Envia a mensagem após ter "digitado"
+    sendTypedMessage(inputElement) {
+        try {
+            console.log('🚀 Enviando mensagem digitada...');
+            
+            // Tenta encontrar e clicar no botão de envio
+            const sendButton = this.findSendButton();
+            if (sendButton) {
+                console.log('�️ Clicando no botão de envio:', sendButton);
+                sendButton.click();
+                
+                // Aguarda um pouco e verifica se foi enviado
+                setTimeout(() => {
+                    if (inputElement.value === '') {
+                        console.log('✅ Mensagem enviada com sucesso! Campo limpo.');
+                    } else {
+                        console.log('⚠️ Campo ainda tem conteúdo, tentando Enter:', inputElement.value);
+                        this.simulateEnterKey(inputElement);
+                    }
+                }, 500);
+                
+            } else {
+                console.log('⌨️ Botão não encontrado, simulando Enter');
+                this.simulateEnterKey(inputElement);
+            }
+            
+        } catch (error) {
+            console.error('❌ Erro ao enviar mensagem digitada:', error);
+            this.simulateEnterKey(inputElement);
+        }
+    }
+    
+    // Simula pressionar Enter de forma mais realista
+    simulateEnterKey(inputElement) {
+        console.log('⌨️ Simulando tecla Enter...');
+        
+        // Foca no input
+        inputElement.focus();
+        
+        // Sequência completa de eventos de teclado
+        const enterEvents = [
+            new KeyboardEvent('keydown', {
+                key: 'Enter',
+                code: 'Enter',
+                keyCode: 13,
+                which: 13,
+                bubbles: true,
+                cancelable: true
+            }),
+            new KeyboardEvent('keypress', {
+                key: 'Enter',
+                code: 'Enter',
+                keyCode: 13,
+                which: 13,
+                bubbles: true,
+                cancelable: true
+            }),
+            new KeyboardEvent('keyup', {
+                key: 'Enter',
+                code: 'Enter',
+                keyCode: 13,
+                which: 13,
+                bubbles: true,
+                cancelable: true
+            })
+        ];
+        
+        enterEvents.forEach((event, index) => {
+            setTimeout(() => {
+                console.log(`📨 Disparando evento ${index + 1}/3:`, event.type);
+                inputElement.dispatchEvent(event);
+            }, index * 50);
+        });
+        
+        // Verifica o resultado após um tempo
+        setTimeout(() => {
+            console.log('🔍 Valor do input após Enter:', inputElement.value);
+            if (inputElement.value === '') {
+                console.log('✅ Mensagem enviada com Enter!');
+            } else {
+                console.log('❌ Mensagem não foi enviada');
+            }
+        }, 1000);
+    }
+    
     // Encontra botão de envio
     findSendButton() {
         const buttonSelectors = [
-            'button[aria-label*="enviar"]',
-            'button[aria-label*="send"]',
-            'button[title*="enviar"]',
-            'button[title*="send"]',
+            // Seletores específicos do Watson Orchestrate
+            'button[aria-label*="Send"]',
+            'button[aria-label*="Enviar"]',
+            'button[title*="Send"]',
+            'button[title*="Enviar"]',
             'button[type="submit"]',
+            
+            // Seletores por posição (próximo ao input)
+            'button svg[data-icon*="send"]',
+            'button i[class*="send"]',
+            'button .fa-paper-plane',
+            'button .fa-send',
+            
+            // Seletores genéricos
             '[data-testid*="send"]',
+            '[data-testid*="submit"]',
             '.send-button',
-            '.chat-send-button'
+            '.chat-send-button',
+            '.submit-button',
+            
+            // Botões próximos a inputs de chat
+            'form button[type="submit"]',
+            'form button:last-child'
         ];
         
         for (let selector of buttonSelectors) {
-            const button = document.querySelector(selector);
-            if (button && button.offsetParent !== null) {
-                return button;
+            const buttons = document.querySelectorAll(selector);
+            for (let button of buttons) {
+                if (button && button.offsetParent !== null) {
+                    console.log('🎯 Botão de envio encontrado:', selector, button);
+                    return button;
+                }
             }
         }
         
+        // Busca por botões próximos a inputs de chat
+        const chatInputs = document.querySelectorAll('input[type="text"], textarea');
+        for (let input of chatInputs) {
+            if (input.offsetParent !== null) {
+                // Procura botões no mesmo container
+                const container = input.closest('form, div, section');
+                if (container) {
+                    const nearbyButton = container.querySelector('button:not([disabled])');
+                    if (nearbyButton && nearbyButton.offsetParent !== null) {
+                        console.log('🎯 Botão próximo ao input encontrado:', nearbyButton);
+                        return nearbyButton;
+                    }
+                }
+            }
+        }
+        
+        console.log('❌ Nenhum botão de envio encontrado');
         return null;
     }
 
