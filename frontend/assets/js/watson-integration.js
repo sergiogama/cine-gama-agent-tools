@@ -47,10 +47,15 @@ class WatsonCineGamaIntegration {
                 const title = movieCard.querySelector('.movie-title')?.textContent;
                 const genre = movieCard.querySelector('.movie-genre')?.textContent;
                 const rating = movieCard.querySelector('.movie-rating')?.textContent;
+                const description = movieCard.querySelector('.movie-description')?.textContent;
                 
                 if (title) {
                     console.log('🎬 Card de filme clicado:', title);
-                    const message = `Quero mais informações sobre o filme "${title}" (${genre}, ${rating}). Quais são os horários disponíveis e como posso comprar ingresso?`;
+                    
+                    // Mensagem mais específica e direta para o agente de cinema
+                    const message = `Olá! Estou interessado no filme "${title}". Pode me dar mais informações sobre este filme, horários de sessões disponíveis e como comprar ingressos?`;
+                    
+                    console.log('📝 Mensagem que será enviada:', message);
                     this.sendToWatson(message);
                 }
             }
@@ -116,6 +121,7 @@ class WatsonCineGamaIntegration {
     // Envia mensagem para o Watson
     sendToWatson(message) {
         console.log('🎬 Enviando para Watson:', message);
+        console.log('🤖 Configuração Watson:', window.wxOConfiguration);
         
         try {
             // Primeiro, abre o chat (sem reinicializar)
@@ -123,6 +129,7 @@ class WatsonCineGamaIntegration {
             
             // Aguarda um pouco e tenta enviar usando o método direto
             setTimeout(() => {
+                console.log('🚀 Iniciando processo de envio de mensagem...');
                 this.waitForChatAndSendMessage(message);
             }, 1000);
             
@@ -140,27 +147,38 @@ class WatsonCineGamaIntegration {
         console.log('⏳ Aguardando chat estar pronto para enviar:', message);
         
         let attempts = 0;
-        const maxAttempts = 10;
-        const checkInterval = 500;
+        const maxAttempts = 15;
+        const checkInterval = 1000;
         
         const checkChatReady = () => {
             attempts++;
             console.log(`🔍 Tentativa ${attempts}/${maxAttempts} - Verificando chat...`);
             
-            // Verifica se existe input de texto no chat
+            // Verifica se existe input de texto no chat com seletores mais específicos
             const chatInput = document.querySelector(
-                'input[type="text"][placeholder*="mensagem"], ' +
-                'input[type="text"][placeholder*="Digite"], ' +
-                'input[type="text"][aria-label*="chat"], ' +
-                'textarea[placeholder*="mensagem"], ' +
-                'textarea[placeholder*="Digite"], ' +
-                '[data-testid="chat-input"], ' +
-                '[id*="chat-input"], ' +
-                '.watson-chat-input'
+                // Seletores específicos do Watson Orchestrate
+                'input[placeholder*="Type a message"]' + ', ' +
+                'input[placeholder*="Enter your message"]' + ', ' +
+                'input[placeholder*="Digite"]' + ', ' +
+                'input[placeholder*="mensagem"]' + ', ' +
+                'input[aria-label*="chat"]' + ', ' +
+                'input[aria-label*="message"]' + ', ' +
+                'textarea[placeholder*="Type a message"]' + ', ' +
+                'textarea[placeholder*="Digite"]' + ', ' +
+                'textarea[placeholder*="mensagem"]' + ', ' +
+                // Seletores genéricos como fallback
+                '[data-testid="chat-input"]' + ', ' +
+                '[id*="chat-input"]' + ', ' +
+                '[class*="chat-input"]' + ', ' +
+                '[class*="message-input"]' + ', ' +
+                'input[type="text"]:not([readonly]):not([disabled])' + ', ' +
+                'textarea:not([readonly]):not([disabled])'
             );
             
             if (chatInput && chatInput.offsetParent !== null) {
-                console.log('✅ Chat input encontrado! Enviando mensagem...');
+                console.log('✅ Chat input encontrado! Elemento:', chatInput);
+                console.log('🔍 Placeholder:', chatInput.placeholder);
+                console.log('🔍 Aria-label:', chatInput.getAttribute('aria-label'));
                 this.directlySendMessage(message, chatInput);
                 return;
             }
@@ -168,7 +186,12 @@ class WatsonCineGamaIntegration {
             if (attempts < maxAttempts) {
                 setTimeout(checkChatReady, checkInterval);
             } else {
-                console.log('❌ Timeout: Chat não ficou pronto, usando fallback');
+                console.log('❌ Timeout: Chat não ficou pronto após', maxAttempts * checkInterval / 1000, 'segundos');
+                console.log('🔍 Elementos input encontrados na página:');
+                const allInputs = document.querySelectorAll('input, textarea');
+                allInputs.forEach((input, index) => {
+                    console.log(`Input ${index}:`, input, 'Visível:', input.offsetParent !== null);
+                });
                 this.simulateUserInput(message);
             }
         };
@@ -180,34 +203,53 @@ class WatsonCineGamaIntegration {
     directlySendMessage(message, inputElement) {
         try {
             console.log('📝 Enviando mensagem diretamente para input:', message);
+            console.log('🎯 Input element encontrado:', inputElement);
             
             // Foca no input
             inputElement.focus();
+            console.log('👆 Focado no input');
+            
+            // Limpa o campo primeiro
+            inputElement.value = '';
             
             // Define o valor
             inputElement.value = message;
+            console.log('✏️ Valor definido no input:', inputElement.value);
             
             // Dispara eventos necessários
             inputElement.dispatchEvent(new Event('input', { bubbles: true }));
             inputElement.dispatchEvent(new Event('change', { bubbles: true }));
+            console.log('📡 Eventos disparados');
             
-            // Procura botão de envio
-            const sendButton = this.findSendButton();
-            if (sendButton) {
-                console.log('🚀 Clicando no botão de envio');
-                sendButton.click();
-            } else {
-                // Simula Enter
-                console.log('⌨️ Simulando pressionar Enter');
-                inputElement.dispatchEvent(new KeyboardEvent('keydown', {
-                    key: 'Enter',
-                    code: 'Enter',
-                    keyCode: 13,
-                    bubbles: true
-                }));
-            }
-            
-            console.log('✅ Mensagem enviada com sucesso!');
+            // Aguarda um pouco antes de tentar enviar
+            setTimeout(() => {
+                // Procura botão de envio
+                const sendButton = this.findSendButton();
+                if (sendButton) {
+                    console.log('🚀 Clicando no botão de envio:', sendButton);
+                    sendButton.click();
+                } else {
+                    // Simula Enter
+                    console.log('⌨️ Simulando pressionar Enter');
+                    inputElement.dispatchEvent(new KeyboardEvent('keydown', {
+                        key: 'Enter',
+                        code: 'Enter',
+                        keyCode: 13,
+                        bubbles: true
+                    }));
+                    
+                    inputElement.dispatchEvent(new KeyboardEvent('keypress', {
+                        key: 'Enter',
+                        code: 'Enter',
+                        keyCode: 13,
+                        bubbles: true
+                    }));
+                }
+                
+                console.log('✅ Tentativa de envio concluída!');
+                console.log('🔍 Valor atual do input após envio:', inputElement.value);
+                
+            }, 500);
             
         } catch (error) {
             console.error('❌ Erro ao enviar mensagem diretamente:', error);
