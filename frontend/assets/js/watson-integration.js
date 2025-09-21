@@ -29,47 +29,85 @@ class WatsonCineGamaIntegration {
 
     // Event listener único para evitar duplicação
     setupSingleClickHandler() {
+        console.log('🔧 Configurando event listener único...');
+        
         // Remove listeners anteriores se existirem
         if (this.clickHandler) {
             document.removeEventListener('click', this.clickHandler);
+            console.log('🗑️ Listener anterior removido');
         }
         
         // Cria o handler único
         this.clickHandler = (e) => {
-            // Previne propagação para evitar múltiplos triggers
-            e.stopPropagation();
+            console.log('🖱️ Clique detectado em:', e.target, 'Classes:', e.target.className);
             
             // Verifica cards de filmes
             const movieCard = e.target.closest('.movie-card');
             if (movieCard) {
-                this.handleMovieCardClick(movieCard);
+                console.log('🎬 Card de filme detectado:', movieCard);
+                e.stopPropagation(); // Só previne propagação se for um card válido
+                try {
+                    this.handleMovieCardClick(movieCard);
+                } catch (error) {
+                    console.error('❌ Erro no handleMovieCardClick:', error);
+                }
                 return;
             }
             
             // Verifica cards de sessões
             const sessionCard = e.target.closest('.session-card');
             if (sessionCard) {
-                this.handleSessionCardClick(sessionCard);
+                console.log('🎪 Card de sessão detectado:', sessionCard);
+                e.stopPropagation(); // Só previne propagação se for um card válido
+                try {
+                    this.handleSessionCardClick(sessionCard);
+                } catch (error) {
+                    console.error('❌ Erro no handleSessionCardClick:', error);
+                }
                 return;
             }
             
             // Verifica botão CTA
             if (e.target.matches('.cta-button')) {
+                console.log('🎯 Botão CTA detectado');
                 e.preventDefault();
-                this.handleCtaButtonClick();
+                e.stopPropagation();
+                try {
+                    this.handleCtaButtonClick();
+                } catch (error) {
+                    console.error('❌ Erro no handleCtaButtonClick:', error);
+                }
                 return;
             }
             
             // Verifica outros botões de ação
             if (e.target.matches('.btn-primary, .buy-button, .info-button')) {
-                this.handleActionButtonClick(e.target);
+                console.log('🔘 Botão de ação detectado');
+                e.stopPropagation();
+                try {
+                    this.handleActionButtonClick(e.target);
+                } catch (error) {
+                    console.error('❌ Erro no handleActionButtonClick:', error);
+                }
                 return;
             }
+            
+            // Se não for nenhum elemento relevante, deixa o evento continuar
+            console.log('➡️ Clique em elemento não relevante, continuando...');
         };
         
         // Registra o event listener único
         document.addEventListener('click', this.clickHandler);
-        console.log('✅ Event listener único configurado');
+        console.log('✅ Event listener único configurado com sucesso!');
+        
+        // Teste para verificar se funciona
+        setTimeout(() => {
+            const movieCards = document.querySelectorAll('.movie-card');
+            console.log('🎬 Cards de filme encontrados:', movieCards.length);
+            if (movieCards.length > 0) {
+                console.log('🎯 Primeiro card:', movieCards[0]);
+            }
+        }, 1000);
     }
 
     // Gerencia clique em card de filme
