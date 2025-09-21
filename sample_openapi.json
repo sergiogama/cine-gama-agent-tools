@@ -7,12 +7,8 @@
   },
   "servers": [
     {
-      "url": "https://cine-gama-api.herokuapp.com",
+      "url": "https://cine-gama-agent-tools.1ziw9aq991z6.us-south.codeengine.appdomain.cloud",
       "description": "Servidor de produção do Cine Gama"
-    },
-    {
-      "url": "http://127.0.0.1:8000",
-      "description": "Servidor local de desenvolvimento"
     }
   ],
   "paths": {
