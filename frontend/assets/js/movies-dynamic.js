@@ -84,28 +84,8 @@ class CinemaAPIService {
                 emoji_poster: "🏙️",
                 rating: 8.6,
                 sessoes: [
-                    {
-                        sessao_id: 1,
-                        filme_id: 1,
-                        sala: "Sala 1",
-                        horario_inicio: "14:00",
-                        horario_fim: "16:10",
-                        data_sessao: "2024-09-21",
-                        preco_ingresso: 1800,
-                        assentos_disponiveis: 45,
-                        assentos_total: 100
-                    },
-                    {
-                        sessao_id: 2,
-                        filme_id: 1,
-                        sala: "Sala VIP",
-                        horario_inicio: "19:00",
-                        horario_fim: "21:10",
-                        data_sessao: "2024-09-21",
-                        preco_ingresso: 2500,
-                        assentos_disponiveis: 23,
-                        assentos_total: 50
-                    }
+                    { sessao_id: 1, filme_id: 1, sala: "Sala 1", horario_inicio: "14:00", horario_fim: "16:10", data_sessao: "2024-09-21", preco_ingresso: 1800, assentos_disponiveis: 45, assentos_total: 100 },
+                    { sessao_id: 2, filme_id: 1, sala: "Sala VIP", horario_inicio: "19:00", horario_fim: "21:10", data_sessao: "2024-09-21", preco_ingresso: 2500, assentos_disponiveis: 23, assentos_total: 50 }
                 ]
             },
             {
@@ -120,17 +100,7 @@ class CinemaAPIService {
                 emoji_poster: "🚂",
                 rating: 8.0,
                 sessoes: [
-                    {
-                        sessao_id: 3,
-                        filme_id: 2,
-                        sala: "Sala 2",
-                        horario_inicio: "15:30",
-                        horario_fim: "17:20",
-                        data_sessao: "2024-09-21",
-                        preco_ingresso: 1800,
-                        assentos_disponiveis: 38,
-                        assentos_total: 80
-                    }
+                    { sessao_id: 3, filme_id: 2, sala: "Sala 2", horario_inicio: "15:30", horario_fim: "17:20", data_sessao: "2024-09-21", preco_ingresso: 1800, assentos_disponiveis: 38, assentos_total: 80 }
                 ]
             },
             {
@@ -145,28 +115,115 @@ class CinemaAPIService {
                 emoji_poster: "🎭",
                 rating: 8.7,
                 sessoes: [
-                    {
-                        sessao_id: 4,
-                        filme_id: 3,
-                        sala: "Sala 3",
-                        horario_inicio: "16:00",
-                        horario_fim: "17:44",
-                        data_sessao: "2024-09-21",
-                        preco_ingresso: 1800,
-                        assentos_disponiveis: 52,
-                        assentos_total: 90
-                    },
-                    {
-                        sessao_id: 5,
-                        filme_id: 3,
-                        sala: "Sala 1",
-                        horario_inicio: "20:30",
-                        horario_fim: "22:14",
-                        data_sessao: "2024-09-21",
-                        preco_ingresso: 2000,
-                        assentos_disponiveis: 67,
-                        assentos_total: 100
-                    }
+                    { sessao_id: 4, filme_id: 3, sala: "Sala 3", horario_inicio: "16:00", horario_fim: "17:44", data_sessao: "2024-09-21", preco_ingresso: 1800, assentos_disponiveis: 52, assentos_total: 90 },
+                    { sessao_id: 5, filme_id: 3, sala: "Sala 1", horario_inicio: "20:30", horario_fim: "22:14", data_sessao: "2024-09-21", preco_ingresso: 2000, assentos_disponiveis: 67, assentos_total: 100 }
+                ]
+            },
+            {
+                filme_id: 4,
+                titulo: "Parasita",
+                descricao: "Thriller sul-coreano vencedor do Oscar, sobre uma família pobre que se infiltra na vida de uma família rica.",
+                genero: "Thriller",
+                duracao_minutos: 132,
+                classificacao_etaria: "16 anos",
+                diretor: "Bong Joon-ho",
+                ano_lancamento: 2019,
+                emoji_poster: "🎭",
+                rating: 8.5,
+                sessoes: [
+                    { sessao_id: 6, filme_id: 4, sala: "Sala IMAX", horario_inicio: "17:00", horario_fim: "19:12", data_sessao: "2024-09-21", preco_ingresso: 2500, assentos_disponiveis: 89, assentos_total: 150 }
+                ]
+            },
+            {
+                filme_id: 5,
+                titulo: "Vingadores: Ultimato",
+                descricao: "O épico final da saga do Infinito da Marvel, onde os heróis enfrentam Thanos em uma batalha decisiva.",
+                genero: "Ação",
+                duracao_minutos: 181,
+                classificacao_etaria: "12 anos",
+                diretor: "Anthony e Joe Russo",
+                ano_lancamento: 2019,
+                emoji_poster: "🦸‍♂️",
+                rating: 8.4,
+                sessoes: [
+                    { sessao_id: 7, filme_id: 5, sala: "Sala IMAX", horario_inicio: "14:30", horario_fim: "17:31", data_sessao: "2024-09-21", preco_ingresso: 2500, assentos_disponiveis: 78, assentos_total: 150 },
+                    { sessao_id: 8, filme_id: 5, sala: "Sala 4", horario_inicio: "20:00", horario_fim: "23:01", data_sessao: "2024-09-21", preco_ingresso: 2000, assentos_disponiveis: 134, assentos_total: 200 }
+                ]
+            },
+            {
+                filme_id: 6,
+                titulo: "Coringa",
+                descricao: "Drama psicológico que conta a origem do icônico vilão do Batman, interpretado por Joaquin Phoenix.",
+                genero: "Drama",
+                duracao_minutos: 122,
+                classificacao_etaria: "16 anos",
+                diretor: "Todd Phillips",
+                ano_lancamento: 2019,
+                emoji_poster: "🃏",
+                rating: 8.4,
+                sessoes: [
+                    { sessao_id: 9, filme_id: 6, sala: "Sala VIP", horario_inicio: "18:15", horario_fim: "20:17", data_sessao: "2024-09-21", preco_ingresso: 2500, assentos_disponiveis: 28, assentos_total: 50 }
+                ]
+            },
+            {
+                filme_id: 7,
+                titulo: "Pantera Negra",
+                descricao: "Superhero da Marvel explora Wakanda e a jornada de T'Challa para se tornar rei e protetor de seu povo.",
+                genero: "Ação",
+                duracao_minutos: 134,
+                classificacao_etaria: "12 anos",
+                diretor: "Ryan Coogler",
+                ano_lancamento: 2018,
+                emoji_poster: "🐾",
+                rating: 7.3,
+                sessoes: [
+                    { sessao_id: 10, filme_id: 7, sala: "Sala 2", horario_inicio: "19:45", horario_fim: "21:59", data_sessao: "2024-09-21", preco_ingresso: 1800, assentos_disponiveis: 67, assentos_total: 80 }
+                ]
+            },
+            {
+                filme_id: 8,
+                titulo: "A Forma da Água",
+                descricao: "Romance fantástico sobre uma mulher muda que se apaixona por uma criatura aquática em um laboratório.",
+                genero: "Romance",
+                duracao_minutos: 123,
+                classificacao_etaria: "14 anos",
+                diretor: "Guillermo del Toro",
+                ano_lancamento: 2017,
+                emoji_poster: "🌊",
+                rating: 7.3,
+                sessoes: [
+                    { sessao_id: 11, filme_id: 8, sala: "Sala 3", horario_inicio: "21:15", horario_fim: "23:18", data_sessao: "2024-09-21", preco_ingresso: 1800, assentos_disponiveis: 54, assentos_total: 90 }
+                ]
+            },
+            {
+                filme_id: 9,
+                titulo: "Mad Max: Estrada da Fúria",
+                descricao: "Ação pós-apocalíptica com perseguições alucinantes pelo deserto em busca de liberdade.",
+                genero: "Ação",
+                duracao_minutos: 120,
+                classificacao_etaria: "14 anos",
+                diretor: "George Miller",
+                ano_lancamento: 2015,
+                emoji_poster: "🏜️",
+                rating: 8.1,
+                sessoes: [
+                    { sessao_id: 12, filme_id: 9, sala: "Sala 4", horario_inicio: "16:45", horario_fim: "18:45", data_sessao: "2024-09-21", preco_ingresso: 2000, assentos_disponiveis: 156, assentos_total: 200 }
+                ]
+            },
+            {
+                filme_id: 10,
+                titulo: "Interestelar",
+                descricao: "Ficção científica épica sobre viagem no tempo e espaço para salvar a humanidade da extinção.",
+                genero: "Ficção Científica",
+                duracao_minutos: 169,
+                classificacao_etaria: "12 anos",
+                diretor: "Christopher Nolan",
+                ano_lancamento: 2014,
+                emoji_poster: "🚀",
+                rating: 8.6,
+                sessoes: [
+                    { sessao_id: 13, filme_id: 10, sala: "Sala IMAX", horario_inicio: "15:00", horario_fim: "17:49", data_sessao: "2024-09-21", preco_ingresso: 2500, assentos_disponiveis: 102, assentos_total: 150 },
+                    { sessao_id: 14, filme_id: 10, sala: "Sala VIP", horario_inicio: "21:30", horario_fim: "00:19", data_sessao: "2024-09-21", preco_ingresso: 2500, assentos_disponiveis: 31, assentos_total: 50 }
                 ]
             }
         ];
@@ -178,6 +235,20 @@ class MovieRenderer {
     constructor(apiService) {
         this.apiService = apiService;
         this.container = document.getElementById('movies-container');
+        
+        // Mapeamento das imagens dos filmes
+        this.movieImages = {
+            "Cidade de Deus": "images/Cidade de Deus.jpeg",
+            "Central do Brasil": "images/Central do Brasil.jpeg",
+            "O Auto da Compadecida": "images/O Aro da Compadecida.jpeg",
+            "Parasita": "images/Parasita.jpeg",
+            "Vingadores: Ultimato": "images/Vingadores.jpeg",
+            "Coringa": "images/Coringa.jpeg",
+            "Pantera Negra": "images/Pantera Negra.jpeg",
+            "A Forma da Água": "images/A forma da agua.jpeg",
+            "Mad Max: Estrada da Fúria": "images/Mad Max.jpeg",
+            "Interestelar": "images/Interestelar.jpeg"
+        };
     }
 
     async loadAndRenderMovies() {
@@ -230,9 +301,16 @@ class MovieRenderer {
         const generoFormatado = this.formatGenre(filme.genero);
         const precoFormatado = this.formatPrice(filme.sessoes[0]?.preco_ingresso || 0);
         
+        // Obter imagem do filme ou usar placeholder
+        const imagePath = this.movieImages[filme.titulo] || '';
+        const posterContent = imagePath ? 
+            `<img src="${imagePath}" alt="${filme.titulo}" class="movie-poster-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+             <div class="movie-poster-emoji" style="display: none;">${filme.emoji_poster}</div>` : 
+            `<div class="movie-poster-emoji">${filme.emoji_poster}</div>`;
+        
         return `
             <div class="movie-card" data-filme-id="${filme.filme_id}">
-                <div class="movie-poster">${filme.emoji_poster}</div>
+                <div class="movie-poster">${posterContent}</div>
                 <div class="movie-info">
                     <h3 class="movie-title">${filme.titulo}</h3>
                     <div class="movie-genre">${generoFormatado}</div>

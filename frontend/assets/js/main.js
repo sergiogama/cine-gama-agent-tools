@@ -66,13 +66,3 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
-
-// Chat widget fallback function (if chat-integration.js fails to load)
-function openChat() {
-    if (window.cineGamaChat && typeof window.cineGamaChat.toggleChat === 'function') {
-        window.cineGamaChat.toggleChat();
-    } else {
-        // Fallback alert
-        alert('🤖 Olá! Sou o assistente do Cine Gama!\n\nEm breve estarei integrado ao Watson Orchestrate para ajudar você com:\n\n🎬 Consultar filmes em cartaz\n🎟️ Comprar ingressos\n📱 Verificar sessões\n❌ Cancelar reservas\n\nFique ligado! 🚀');
-    }
-}
