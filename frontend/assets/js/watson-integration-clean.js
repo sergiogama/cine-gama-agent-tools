@@ -224,54 +224,236 @@ class WatsonCineGamaIntegration {
 
     typeMessageInInput(input, message) {
         try {
-            console.log('⌨️ Digitando mensagem no input...');
+            console.log('⌨️ Iniciando digitação humana realística...');
             
-            // Foca no input
+            // Foca no input primeiro
             input.focus();
+            input.click(); // Simula clique para ativar
             
-            // Limpa o input
+            // Limpa o input completamente
             input.value = '';
+            input.dispatchEvent(new Event('input', { bubbles: true }));
             
-            // Simula digitação caractere por caractere
-            let charIndex = 0;
-            const typeChar = () => {
-                if (charIndex < message.length) {
-                    input.value += message[charIndex];
-                    
-                    // Dispara eventos a cada caractere
-                    input.dispatchEvent(new Event('input', { bubbles: true }));
-                    
-                    charIndex++;
-                    setTimeout(typeChar, 50); // 50ms entre caracteres
-                } else {
-                    // Mensagem completa, dispara eventos finais
-                    input.dispatchEvent(new Event('change', { bubbles: true }));
-                    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
-                    input.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', bubbles: true }));
-                    
-                    // Tenta encontrar e clicar no botão de enviar
-                    setTimeout(() => {
-                        console.log('🚀 Tentando enviar mensagem...');
-                        const success = this.clickSendButton();
-                        if (!success) {
-                            console.log('⚠️ Falha no envio automático - aguardando 2s e tentando novamente...');
-                            setTimeout(() => {
-                                this.clickSendButton();
-                            }, 2000);
-                        }
-                    }, 500);
-                    
-                    console.log('✅ Mensagem digitada com sucesso!');
-                    this.isSending = false;
-                }
-            };
-            
-            typeChar();
+            // Aguarda um pouco antes de começar a digitar
+            setTimeout(() => {
+                this.simulateHumanTyping(input, message);
+            }, 300);
             
         } catch (error) {
-            console.error('❌ Erro ao digitar mensagem:', error);
+            console.error('❌ Erro ao iniciar digitação:', error);
             this.isSending = false;
         }
+    }
+
+    simulateHumanTyping(input, message) {
+        console.log('🤖 Simulando digitação humana caractere por caractere...');
+        
+        let charIndex = 0;
+        const chars = message.split('');
+        
+        const typeNextChar = () => {
+            if (charIndex >= chars.length) {
+                console.log('✅ Digitação completa! Preparando envio...');
+                this.finalizeMessage(input);
+                return;
+            }
+            
+            const char = chars[charIndex];
+            
+            // Simula eventos de teclado ANTES de adicionar o caractere
+            this.simulateKeyEvents(input, char);
+            
+            // Adiciona o caractere
+            input.value = input.value + char;
+            
+            // Dispara eventos de mudança
+            input.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }));
+            input.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
+            
+            charIndex++;
+            
+            // Velocidade humana variável (100-200ms entre caracteres)
+            const delay = Math.random() * 100 + 100;
+            setTimeout(typeNextChar, delay);
+        };
+        
+        typeNextChar();
+    }
+
+    simulateKeyEvents(input, char) {
+        // Simula eventos de teclado reais para cada caractere
+        const keyCode = char.charCodeAt(0);
+        
+        // KeyDown
+        const keyDownEvent = new KeyboardEvent('keydown', {
+            key: char,
+            code: `Key${char.toUpperCase()}`,
+            keyCode: keyCode,
+            which: keyCode,
+            charCode: keyCode,
+            bubbles: true,
+            cancelable: true,
+            composed: true
+        });
+        input.dispatchEvent(keyDownEvent);
+        
+        // KeyPress (para caracteres imprimíveis)
+        if (char.match(/[a-zA-Z0-9\s]/)) {
+            const keyPressEvent = new KeyboardEvent('keypress', {
+                key: char,
+                code: `Key${char.toUpperCase()}`,
+                keyCode: keyCode,
+                which: keyCode,
+                charCode: keyCode,
+                bubbles: true,
+                cancelable: true,
+                composed: true
+            });
+            input.dispatchEvent(keyPressEvent);
+        }
+        
+        // KeyUp
+        const keyUpEvent = new KeyboardEvent('keyup', {
+            key: char,
+            code: `Key${char.toUpperCase()}`,
+            keyCode: keyCode,
+            which: keyCode,
+            charCode: keyCode,
+            bubbles: true,
+            cancelable: true,
+            composed: true
+        });
+        input.dispatchEvent(keyUpEvent);
+    }
+
+    finalizeMessage(input) {
+        console.log('🏁 Finalizando mensagem e preparando envio...');
+        
+        // Aguarda um pouco para parecer mais humano
+        setTimeout(() => {
+            // Simula eventos finais
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+            input.dispatchEvent(new Event('blur', { bubbles: true }));
+            input.focus(); // Refoca
+            
+            // Aguarda mais um pouco antes de enviar
+            setTimeout(() => {
+                this.attemptSendMessage(input);
+            }, 500);
+        }, 300);
+    }
+
+    attemptSendMessage(input) {
+        console.log('🚀 Tentando enviar mensagem de múltiplas formas...');
+        
+        // Método 1: Simula Enter humano
+        this.simulateHumanEnter(input);
+        
+        // Método 2: Procura e clica no botão (depois de um delay)
+        setTimeout(() => {
+            const success = this.clickSendButton();
+            if (!success) {
+                console.log('⚠️ Tentativa de envio falhou, aguardando interação manual...');
+                this.showManualSendPrompt();
+            }
+        }, 1000);
+        
+        this.isSending = false;
+    }
+
+    simulateHumanEnter(input) {
+        console.log('⌨️ Simulando tecla Enter humana...');
+        
+        // Foca no input
+        input.focus();
+        
+        // Simula sequência completa de Enter
+        const enterKeyDown = new KeyboardEvent('keydown', {
+            key: 'Enter',
+            code: 'Enter',
+            keyCode: 13,
+            which: 13,
+            bubbles: true,
+            cancelable: true,
+            composed: true
+        });
+        
+        const enterKeyPress = new KeyboardEvent('keypress', {
+            key: 'Enter', 
+            code: 'Enter',
+            keyCode: 13,
+            which: 13,
+            bubbles: true,
+            cancelable: true,
+            composed: true
+        });
+        
+        const enterKeyUp = new KeyboardEvent('keyup', {
+            key: 'Enter',
+            code: 'Enter', 
+            keyCode: 13,
+            which: 13,
+            bubbles: true,
+            cancelable: true,
+            composed: true
+        });
+        
+        // Dispara eventos em sequência
+        input.dispatchEvent(enterKeyDown);
+        setTimeout(() => {
+            input.dispatchEvent(enterKeyPress);
+            setTimeout(() => {
+                input.dispatchEvent(enterKeyUp);
+            }, 50);
+        }, 50);
+    }
+
+    showManualSendPrompt() {
+        console.log('📢 Exibindo prompt para envio manual...');
+        
+        const prompt = document.createElement('div');
+        prompt.innerHTML = `
+            <div style="
+                position: fixed;
+                bottom: 100px;
+                right: 20px;
+                background: #FF9800;
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                z-index: 9999;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                max-width: 280px;
+                font-size: 14px;
+                animation: pulse 2s infinite;
+            ">
+                <div style="font-weight: bold; margin-bottom: 8px;">
+                    🎯 Mensagem preparada!
+                </div>
+                <div style="font-size: 12px; opacity: 0.9;">
+                    Clique no botão de enviar do chat para completar.
+                </div>
+                <div style="
+                    position: absolute;
+                    top: -10px;
+                    right: 20px;
+                    width: 0;
+                    height: 0;
+                    border-left: 10px solid transparent;
+                    border-right: 10px solid transparent;
+                    border-bottom: 10px solid #FF9800;
+                "></div>
+            </div>
+        `;
+        
+        document.body.appendChild(prompt);
+        
+        // Remove após 8 segundos
+        setTimeout(() => {
+            if (prompt.parentNode) {
+                prompt.parentNode.removeChild(prompt);
+            }
+        }, 8000);
     }
 
     clickSendButton() {
@@ -652,6 +834,12 @@ class WatsonCineGamaIntegration {
                 font-size: 0.8rem;
                 white-space: nowrap;
                 z-index: 10;
+            }
+            
+            @keyframes pulse {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.05); }
+                100% { transform: scale(1); }
             }
         `;
         document.head.appendChild(style);
