@@ -231,12 +231,36 @@
     </footer>
 
     <!-- Chat Widget -->
-    <div class="chat-widget" onclick="openChat()">
-        <i class="fas fa-comments"></i>
+    <div class="chat-widget" onclick="openWatsonChat()">
+        <i class="fas fa-robot"></i>
+        <span class="chat-tooltip">Fale com nosso assistente!</span>
     </div>
 
-    <!-- JavaScript -->
-    <script src="assets/js/chat-integration.js"></script>
+    <!-- Watson Orchestrate Chat Container -->
+    <div id="root"></div>
+
+    <!-- Watson Orchestrate Script -->
+    <script>
+        window.wxOConfiguration = {
+            orchestrationID: "20250515-0817-2486-8019-c55acc2aa9da_20250515-1932-5868-002f-259f7ce4a770",
+            hostURL: "https://dl.watson-orchestrate.ibm.com",
+            rootElementID: "root",
+            chatOptions: {
+                agentId: "08f27759-f6d2-4d77-9a0d-8741182738ed", 
+            }
+        };
+        setTimeout(function () {
+            const script = document.createElement('script');
+            script.src = `${window.wxOConfiguration.hostURL}/wxochat/wxoLoader.js?embed=true`;
+            script.addEventListener('load', function () {
+                wxoLoader.init();
+            });
+            document.head.appendChild(script);
+        }, 0);
+    </script>
+
+    <!-- Custom Integration Script -->
+    <script src="assets/js/watson-integration.js"></script>
     <script src="assets/js/main.js"></script>
 </body>
 </html>
