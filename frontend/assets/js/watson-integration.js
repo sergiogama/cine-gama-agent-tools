@@ -166,73 +166,17 @@ class WatsonCineGamaIntegration {
         }
     }
 
-    // Adiciona estilos customizados
+    // Adiciona estilos customizados para as interações
     addCustomStyles() {
         const styles = `
             <style>
-                /* Estilos para integração Watson */
-                .chat-widget {
-                    position: fixed;
-                    bottom: 20px;
-                    right: 20px;
-                    width: 60px;
-                    height: 60px;
-                    background: linear-gradient(45deg, #ff6b6b, #ff8e53);
-                    border-radius: 50%;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    cursor: pointer;
-                    box-shadow: 0 4px 20px rgba(255, 107, 107, 0.4);
-                    transition: all 0.3s ease;
-                    z-index: 1000;
-                    animation: pulse 2s infinite;
-                }
-
-                .chat-widget:hover {
-                    transform: scale(1.1);
-                    box-shadow: 0 6px 25px rgba(255, 107, 107, 0.6);
-                }
-
-                .chat-widget i {
-                    color: white;
-                    font-size: 1.5rem;
-                }
-
-                .chat-tooltip {
-                    position: absolute;
-                    right: 70px;
-                    background: rgba(0, 0, 0, 0.8);
-                    color: white;
-                    padding: 8px 12px;
-                    border-radius: 8px;
-                    font-size: 0.85rem;
-                    white-space: nowrap;
-                    opacity: 0;
-                    transition: opacity 0.3s;
-                    pointer-events: none;
-                }
-
-                .chat-widget:hover .chat-tooltip {
-                    opacity: 1;
-                }
-
-                @keyframes pulse {
-                    0% {
-                        box-shadow: 0 4px 20px rgba(255, 107, 107, 0.4);
-                    }
-                    50% {
-                        box-shadow: 0 4px 20px rgba(255, 107, 107, 0.8);
-                    }
-                    100% {
-                        box-shadow: 0 4px 20px rgba(255, 107, 107, 0.4);
-                    }
-                }
-
+                /* Estilos para interação com Watson Orchestrate */
+                
                 /* Destaque para elementos interativos */
                 .movie-card, .session-card {
                     transition: transform 0.3s ease, box-shadow 0.3s ease;
                     cursor: pointer;
+                    position: relative;
                 }
 
                 .movie-card:hover, .session-card:hover {
@@ -253,27 +197,33 @@ class WatsonCineGamaIntegration {
                     font-size: 0.8rem;
                     white-space: nowrap;
                     z-index: 10;
+                    animation: fadeIn 0.3s ease;
                 }
 
-                /* Customização do container Watson */
+                @keyframes fadeIn {
+                    from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+                    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+                }
+
+                /* Melhora visual para CTAs */
+                .cta-button {
+                    transition: all 0.3s ease;
+                }
+
+                .cta-button:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+                }
+
+                /* Watson Orchestrate container customization */
                 #root {
                     z-index: 999;
                 }
 
                 @media (max-width: 768px) {
-                    .chat-widget {
-                        width: 50px;
-                        height: 50px;
-                        bottom: 15px;
-                        right: 15px;
-                    }
-
-                    .chat-widget i {
-                        font-size: 1.2rem;
-                    }
-
-                    .chat-tooltip {
-                        display: none;
+                    .movie-card:hover::after, .session-card:hover::after {
+                        font-size: 0.7rem;
+                        padding: 3px 8px;
                     }
                 }
             </style>
@@ -283,7 +233,7 @@ class WatsonCineGamaIntegration {
     }
 }
 
-// Função global para abrir o Watson chat
+// Função global para abrir o Watson chat (se necessário)
 function openWatsonChat() {
     if (window.watsonIntegration) {
         window.watsonIntegration.openWatsonChat();
