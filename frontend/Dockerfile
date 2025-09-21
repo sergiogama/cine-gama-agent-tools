@@ -6,21 +6,20 @@ FROM nginx:alpine
 # Install curl for health checks
 RUN apk add --no-cache curl
 
+# Remove default nginx config
+RUN rm /etc/nginx/conf.d/default.conf
+
 # Copy custom nginx configuration
-COPY nginx.conf /etc/nginx/nginx.conf
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Copy static files directly
-COPY . /usr/share/nginx/html
+COPY index.html /usr/share/nginx/html/
+COPY assets/ /usr/share/nginx/html/assets/
 
-# Remove nginx.conf and Dockerfile from served files
-RUN rm -f /usr/share/nginx/html/nginx.conf /usr/share/nginx/html/Dockerfile /usr/share/nginx/html/README.md
+# Create a simple health check file
+RUN echo "healthy" > /usr/share/nginx/html/health
 
-# Create log directory with proper permissions
-RUN mkdir -p /var/log/nginx && \
-    chown -R nginx:nginx /var/log/nginx && \
-    chmod -R 755 /var/log/nginx
-
-# Set proper permissions for nginx files
+# Set proper permissions
 RUN chown -R nginx:nginx /usr/share/nginx/html && \
     chmod -R 755 /usr/share/nginx/html
 
