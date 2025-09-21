@@ -117,45 +117,125 @@ class WatsonCineGamaIntegration {
     sendToWatson(message) {
         console.log('🎬 Enviando para Watson:', message);
         
-        if (this.chatReady && window.wxoLoader) {
-            try {
-                // Primeiro, abre o chat
-                this.openWatsonChat();
-                
-                // Aguarda o chat abrir e tenta enviar a mensagem
-                setTimeout(() => {
-                    // Método 1: API direta do Watson Orchestrate (se disponível)
-                    if (window.wxoLoader.sendMessage) {
-                        window.wxoLoader.sendMessage(message);
-                        console.log('✅ Mensagem enviada via API Watson');
-                        return;
-                    }
-                    
-                    // Método 2: Usar postMessage para comunicar com o iframe
-                    const watsonIframe = this.findWatsonIframe();
-                    if (watsonIframe) {
-                        watsonIframe.contentWindow.postMessage({
-                            type: 'user_message',
-                            message: message
-                        }, '*');
-                        console.log('✅ Mensagem enviada via postMessage');
-                        return;
-                    }
-                    
-                    // Método 3: Simular interação do usuário
-                    this.simulateUserInput(message);
-                    
-                }, 1500);
-                
-            } catch (error) {
-                console.error('Erro ao enviar mensagem:', error);
-                this.openWatsonChat();
-                setTimeout(() => this.simulateUserInput(message), 2000);
-            }
-        } else {
-            console.log('❌ Watson não está pronto ainda');
+        try {
+            // Primeiro, abre o chat (sem reinicializar)
             this.openWatsonChat();
+            
+            // Aguarda um pouco e tenta enviar usando o método direto
+            setTimeout(() => {
+                this.waitForChatAndSendMessage(message);
+            }, 1000);
+            
+        } catch (error) {
+            console.error('❌ Erro ao enviar mensagem:', error);
+            // Fallback final
+            setTimeout(() => {
+                this.simulateUserInput(message);
+            }, 2000);
         }
+    }
+
+    // Aguarda o chat estar pronto e envia mensagem
+    waitForChatAndSendMessage(message) {
+        console.log('⏳ Aguardando chat estar pronto para enviar:', message);
+        
+        let attempts = 0;
+        const maxAttempts = 10;
+        const checkInterval = 500;
+        
+        const checkChatReady = () => {
+            attempts++;
+            console.log(`🔍 Tentativa ${attempts}/${maxAttempts} - Verificando chat...`);
+            
+            // Verifica se existe input de texto no chat
+            const chatInput = document.querySelector(
+                'input[type="text"][placeholder*="mensagem"], ' +
+                'input[type="text"][placeholder*="Digite"], ' +
+                'input[type="text"][aria-label*="chat"], ' +
+                'textarea[placeholder*="mensagem"], ' +
+                'textarea[placeholder*="Digite"], ' +
+                '[data-testid="chat-input"], ' +
+                '[id*="chat-input"], ' +
+                '.watson-chat-input'
+            );
+            
+            if (chatInput && chatInput.offsetParent !== null) {
+                console.log('✅ Chat input encontrado! Enviando mensagem...');
+                this.directlySendMessage(message, chatInput);
+                return;
+            }
+            
+            if (attempts < maxAttempts) {
+                setTimeout(checkChatReady, checkInterval);
+            } else {
+                console.log('❌ Timeout: Chat não ficou pronto, usando fallback');
+                this.simulateUserInput(message);
+            }
+        };
+        
+        checkChatReady();
+    }
+    
+    // Envia mensagem diretamente para o input
+    directlySendMessage(message, inputElement) {
+        try {
+            console.log('📝 Enviando mensagem diretamente para input:', message);
+            
+            // Foca no input
+            inputElement.focus();
+            
+            // Define o valor
+            inputElement.value = message;
+            
+            // Dispara eventos necessários
+            inputElement.dispatchEvent(new Event('input', { bubbles: true }));
+            inputElement.dispatchEvent(new Event('change', { bubbles: true }));
+            
+            // Procura botão de envio
+            const sendButton = this.findSendButton();
+            if (sendButton) {
+                console.log('🚀 Clicando no botão de envio');
+                sendButton.click();
+            } else {
+                // Simula Enter
+                console.log('⌨️ Simulando pressionar Enter');
+                inputElement.dispatchEvent(new KeyboardEvent('keydown', {
+                    key: 'Enter',
+                    code: 'Enter',
+                    keyCode: 13,
+                    bubbles: true
+                }));
+            }
+            
+            console.log('✅ Mensagem enviada com sucesso!');
+            
+        } catch (error) {
+            console.error('❌ Erro ao enviar mensagem diretamente:', error);
+            this.simulateUserInput(message);
+        }
+    }
+    
+    // Encontra botão de envio
+    findSendButton() {
+        const buttonSelectors = [
+            'button[aria-label*="enviar"]',
+            'button[aria-label*="send"]',
+            'button[title*="enviar"]',
+            'button[title*="send"]',
+            'button[type="submit"]',
+            '[data-testid*="send"]',
+            '.send-button',
+            '.chat-send-button'
+        ];
+        
+        for (let selector of buttonSelectors) {
+            const button = document.querySelector(selector);
+            if (button && button.offsetParent !== null) {
+                return button;
+            }
+        }
+        
+        return null;
     }
 
     // Encontra o iframe do Watson
@@ -304,22 +384,30 @@ class WatsonCineGamaIntegration {
 
     // Abre o Watson chat
     openWatsonChat() {
-        console.log('🎬 Abrindo Watson chat...');
+        console.log('🎬 Verificando status do Watson chat...');
+        
+        // Verifica se o chat já está visível/aberto
+        const chatContainer = document.querySelector('#root');
+        const existingChat = chatContainer?.querySelector('[data-testid*="chat"], iframe, .watson-widget, .wxo-chat');
+        
+        if (existingChat) {
+            console.log('✅ Chat Watson já está carregado, apenas exibindo...');
+        }
         
         if (window.wxoLoader) {
             try {
-                // Métodos possíveis de abertura do Watson
-                if (window.wxoLoader.open) {
+                // Prioriza métodos que apenas mostram o chat
+                if (window.wxoLoader.show) {
+                    window.wxoLoader.show();
+                    console.log('✅ Chat mostrado via wxoLoader.show()');
+                } else if (window.wxoLoader.open) {
                     window.wxoLoader.open();
                     console.log('✅ Chat aberto via wxoLoader.open()');
-                } else if (window.wxoLoader.show) {
-                    window.wxoLoader.show();
-                    console.log('✅ Chat aberto via wxoLoader.show()');
                 } else if (window.wxoLoader.toggle) {
                     window.wxoLoader.toggle();
-                    console.log('✅ Chat aberto via wxoLoader.toggle()');
+                    console.log('✅ Chat toggleado via wxoLoader.toggle()');
                 } else {
-                    console.log('⚠️ Métodos de abertura não encontrados');
+                    console.log('⚠️ Métodos de abertura não encontrados, usando fallback');
                     this.clickChatWidget();
                 }
             } catch (error) {

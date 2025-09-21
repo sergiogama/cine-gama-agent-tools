@@ -46,7 +46,7 @@ echo "⬆️  Atualizando pip..."
 pip install --upgrade pip
 
 # Instalar dependências
-if [ -f "requirements.txt" ]; then
+if [ -f "backend/requirements.txt" ]; then
     echo "📦 Instalando dependências do requirements.txt..."
     pip install -r requirements.txt
 else
