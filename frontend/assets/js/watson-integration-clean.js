@@ -118,186 +118,293 @@ class WatsonCineGamaIntegration {
         this.isSending = true;
         console.log('📤 Enviando para Watson:', message);
         
-        // Tenta enviar a mensagem diretamente
-        this.sendMessageDirectly(message);
+        // Aguarda um pouco para garantir que o chat esteja carregado
+        setTimeout(() => {
+            this.sendMessageToWatsonChat(message);
+        }, 1000);
+    }
+
+    sendMessageToWatsonChat(message) {
+        try {
+            console.log('🔍 Procurando elementos do Watson chat...');
+            
+            // Salva a mensagem atual para uso em fallbacks
+            this.currentMessage = message;
+            
+            // Aguarda o iframe do Watson carregar
+            this.waitForWatsonChatFrame((chatFrame) => {
+                console.log('✅ Frame do Watson encontrado!');
+                this.injectMessageIntoChat(chatFrame, message);
+            });
+            
+        } catch (error) {
+            console.error('❌ Erro ao enviar mensagem:', error);
+            this.isSending = false;
+        }
+    }
+
+    waitForWatsonChatFrame(callback) {
+        let attempts = 0;
+        const maxAttempts = 20;
         
+        const checkForFrame = () => {
+            attempts++;
+            
+            // Procura por iframe do Watson
+            const iframe = document.querySelector('#root iframe');
+            
+            if (iframe && iframe.contentDocument) {
+                console.log('🎯 Iframe encontrado com acesso ao conteúdo');
+                callback(iframe);
+                return;
+            }
+            
+            // Procura por elementos do chat diretamente no DOM
+            const chatInput = document.querySelector('#root input[type="text"], #root textarea');
+            if (chatInput) {
+                console.log('🎯 Input do chat encontrado diretamente');
+                callback(null, chatInput);
+                return;
+            }
+            
+            if (attempts < maxAttempts) {
+                console.log(`🔄 Tentativa ${attempts}/${maxAttempts} - aguardando chat carregar...`);
+                setTimeout(checkForFrame, 500);
+            } else {
+                console.log('⚠️ Timeout aguardando chat - usando método alternativo');
+                this.alternativeMessageMethod(this.currentMessage);
+            }
+        };
+        
+        checkForFrame();
+    }
+
+    injectMessageIntoChat(iframe, message) {
+        try {
+            let chatDocument = document;
+            let chatInput = null;
+            
+            // Se temos iframe, usa o documento do iframe
+            if (iframe && iframe.contentDocument) {
+                chatDocument = iframe.contentDocument;
+            }
+            
+            // Procura por diferentes tipos de input
+            const inputSelectors = [
+                'input[type="text"]',
+                'textarea',
+                '[role="textbox"]',
+                '[contenteditable="true"]',
+                '.wxo-input',
+                '.chat-input',
+                '[placeholder*="message"]',
+                '[placeholder*="mensagem"]'
+            ];
+            
+            for (const selector of inputSelectors) {
+                chatInput = chatDocument.querySelector(selector);
+                if (chatInput) {
+                    console.log('✅ Input encontrado:', selector);
+                    break;
+                }
+            }
+            
+            if (chatInput) {
+                this.typeMessageInInput(chatInput, message);
+            } else {
+                console.log('⚠️ Input não encontrado, tentando método de evento...');
+                this.triggerWatsonWithEvent(message);
+            }
+            
+        } catch (error) {
+            console.error('❌ Erro ao injetar mensagem:', error);
+            this.triggerWatsonWithEvent(message);
+        }
+    }
+
+    typeMessageInInput(input, message) {
+        try {
+            console.log('⌨️ Digitando mensagem no input...');
+            
+            // Foca no input
+            input.focus();
+            
+            // Limpa o input
+            input.value = '';
+            
+            // Simula digitação caractere por caractere
+            let charIndex = 0;
+            const typeChar = () => {
+                if (charIndex < message.length) {
+                    input.value += message[charIndex];
+                    
+                    // Dispara eventos a cada caractere
+                    input.dispatchEvent(new Event('input', { bubbles: true }));
+                    
+                    charIndex++;
+                    setTimeout(typeChar, 50); // 50ms entre caracteres
+                } else {
+                    // Mensagem completa, dispara eventos finais
+                    input.dispatchEvent(new Event('change', { bubbles: true }));
+                    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+                    input.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', bubbles: true }));
+                    
+                    // Tenta encontrar e clicar no botão de enviar
+                    setTimeout(() => {
+                        this.clickSendButton();
+                    }, 200);
+                    
+                    console.log('✅ Mensagem digitada com sucesso!');
+                    this.isSending = false;
+                }
+            };
+            
+            typeChar();
+            
+        } catch (error) {
+            console.error('❌ Erro ao digitar mensagem:', error);
+            this.isSending = false;
+        }
+    }
+
+    clickSendButton() {
+        const sendSelectors = [
+            'button[type="submit"]',
+            'button[aria-label*="send"]',
+            'button[aria-label*="enviar"]',
+            '[data-testid*="send"]',
+            '.send-button',
+            '.wxo-send',
+            'button:has(svg)',
+            'button:last-of-type'
+        ];
+        
+        for (const selector of sendSelectors) {
+            const button = document.querySelector(selector);
+            if (button && !button.disabled) {
+                console.log('🔴 Clicando no botão de enviar:', selector);
+                button.click();
+                return true;
+            }
+        }
+        
+        console.log('⚠️ Botão de enviar não encontrado');
+        return false;
+    }
+
+    triggerWatsonWithEvent(message) {
+        console.log('🎭 Usando método de evento personalizado...');
+        
+        // Cria evento customizado para Watson
+        const watsonEvent = new CustomEvent('watsonMessage', {
+            detail: { message: message },
+            bubbles: true
+        });
+        
+        document.dispatchEvent(watsonEvent);
+        
+        // Mostra feedback visual temporário
+        this.showTemporaryFeedback(message);
         this.isSending = false;
     }
 
-    sendMessageDirectly(message) {
+    alternativeMessageMethod(message) {
+        console.log('🔄 Método alternativo - aguardando interação manual...');
+        
+        // Copia mensagem para clipboard
+        this.copyToClipboard(message);
+        
+        // Mostra notificação com instrução
+        this.showInteractiveNotification(message);
+        this.isSending = false;
+    }
+
+    copyToClipboard(text) {
         try {
-            // Primeiro verifica se o Watson está disponível
-            if (!window.wxoLoader) {
-                console.log('⚠️ Watson não carregado, aguardando...');
-                setTimeout(() => this.sendMessageDirectly(message), 1000);
-                return;
-            }
-
-            // Verifica se há uma instância do chat
-            const chatInstance = this.getChatInstance();
-            if (chatInstance) {
-                console.log('✅ Instância do chat encontrada, enviando mensagem...');
-                this.sendToExistingChat(chatInstance, message);
-            } else {
-                console.log('⚠️ Chat não encontrado, usando método alternativo...');
-                this.fallbackSendMessage(message);
-            }
+            navigator.clipboard.writeText(text);
+            console.log('📋 Mensagem copiada para clipboard');
         } catch (error) {
-            console.error('❌ Erro ao enviar mensagem:', error);
-            this.fallbackSendMessage(message);
+            console.log('⚠️ Não foi possível copiar para clipboard');
         }
     }
 
-    getChatInstance() {
-        // Procura por instâncias do chat
-        if (window.wxoLoader && window.wxoLoader.instance) {
-            return window.wxoLoader.instance;
-        }
+    showTemporaryFeedback(message) {
+        const feedback = document.createElement('div');
+        feedback.innerHTML = `
+            <div style="
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #4CAF50;
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                z-index: 9999;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                font-size: 14px;
+                animation: slideIn 0.3s ease;
+            ">
+                ✅ <strong>Mensagem enviada!</strong><br>
+                <small>"${message.substring(0, 50)}..."</small>
+            </div>
+        `;
         
-        // Procura no DOM por elementos do chat
-        const chatFrame = document.querySelector('#root iframe');
-        if (chatFrame) {
-            return chatFrame.contentWindow;
-        }
+        document.body.appendChild(feedback);
         
-        return null;
-    }
-
-    sendToExistingChat(chatInstance, message) {
-        try {
-            // Método 1: Usar API do Watson se disponível
-            if (chatInstance.sendMessage) {
-                chatInstance.sendMessage(message);
-                console.log('✅ Mensagem enviada via API');
-                return;
+        setTimeout(() => {
+            if (feedback.parentNode) {
+                feedback.parentNode.removeChild(feedback);
             }
-
-            // Método 2: Simular digitação se API não estiver disponível
-            this.simulateTyping(message);
-            
-        } catch (error) {
-            console.error('❌ Erro ao enviar para chat existente:', error);
-            this.simulateTyping(message);
-        }
+        }, 3000);
     }
 
-    simulateTyping(message) {
-        console.log('🤖 Simulando digitação da mensagem...');
-        
-        // Procura o input do chat
-        const chatInput = this.findChatInput();
-        if (chatInput) {
-            // Foca no input
-            chatInput.focus();
-            
-            // Define o valor
-            chatInput.value = message;
-            
-            // Dispara eventos
-            chatInput.dispatchEvent(new Event('input', { bubbles: true }));
-            chatInput.dispatchEvent(new Event('change', { bubbles: true }));
-            
-            // Procura e clica no botão de enviar
-            setTimeout(() => {
-                const sendButton = this.findSendButton();
-                if (sendButton) {
-                    sendButton.click();
-                    console.log('✅ Mensagem enviada via simulação');
-                } else {
-                    console.log('⚠️ Botão de enviar não encontrado');
-                }
-            }, 500);
-        } else {
-            console.log('⚠️ Input do chat não encontrado');
-        }
-    }
-
-    findChatInput() {
-        // Procura em diferentes possíveis seletores
-        const selectors = [
-            '#root textarea',
-            '#root input[type="text"]',
-            'iframe textarea',
-            'iframe input[type="text"]',
-            '[data-testid="chat-input"]',
-            '[placeholder*="mensagem"]',
-            '[placeholder*="message"]'
-        ];
-        
-        for (const selector of selectors) {
-            const input = document.querySelector(selector);
-            if (input) {
-                console.log('✅ Input encontrado:', selector);
-                return input;
-            }
-        }
-        
-        return null;
-    }
-
-    findSendButton() {
-        // Procura botão de enviar
-        const selectors = [
-            '#root button[type="submit"]',
-            '#root [aria-label*="send"]',
-            '#root [aria-label*="enviar"]',
-            'iframe button[type="submit"]',
-            'iframe [aria-label*="send"]',
-            'iframe [aria-label*="enviar"]'
-        ];
-        
-        for (const selector of selectors) {
-            const button = document.querySelector(selector);
-            if (button) {
-                console.log('✅ Botão encontrado:', selector);
-                return button;
-            }
-        }
-        
-        return null;
-    }
-
-    fallbackSendMessage(message) {
-        console.log('🔄 Usando método de fallback...');
-        
-        // Só mostra uma notificação discreta, sem alert
-        this.showDiscreteNotification(message);
-    }
-
-    showDiscreteNotification(message) {
-        // Cria uma notificação pequena e discreta
+    showInteractiveNotification(message) {
         const notification = document.createElement('div');
         notification.innerHTML = `
             <div style="
                 position: fixed;
                 top: 20px;
                 right: 20px;
-                background: #ff6b6b;
+                background: #2196F3;
                 color: white;
-                padding: 15px 20px;
-                border-radius: 8px;
+                padding: 20px;
+                border-radius: 12px;
                 z-index: 9999;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-                max-width: 300px;
+                box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+                max-width: 320px;
                 font-size: 14px;
-                line-height: 1.4;
+                line-height: 1.5;
             ">
-                <strong>🤖 Mensagem preparada:</strong><br>
-                "${message}"<br>
-                <small style="opacity: 0.8; margin-top: 8px; display: block;">
-                    Agora você pode digitar esta pergunta no chat!
-                </small>
+                <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                    <span style="font-size: 20px; margin-right: 8px;">🤖</span>
+                    <strong>Mensagem Preparada</strong>
+                </div>
+                <div style="background: rgba(255,255,255,0.1); padding: 10px; border-radius: 6px; margin: 10px 0; font-style: italic;">
+                    "${message}"
+                </div>
+                <div style="font-size: 12px; opacity: 0.9;">
+                    📋 Mensagem copiada! Cole no chat com Ctrl+V
+                </div>
+                <button onclick="this.parentElement.parentElement.remove()" style="
+                    position: absolute;
+                    top: 5px;
+                    right: 10px;
+                    background: none;
+                    border: none;
+                    color: white;
+                    font-size: 18px;
+                    cursor: pointer;
+                ">×</button>
             </div>
         `;
         
         document.body.appendChild(notification);
         
-        // Remove após 5 segundos
         setTimeout(() => {
             if (notification.parentNode) {
                 notification.parentNode.removeChild(notification);
             }
-        }, 5000);
+        }, 8000);
     }
 
     addInteractionStyles() {
