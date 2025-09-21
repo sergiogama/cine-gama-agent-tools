@@ -4,6 +4,8 @@
 class WatsonCineGamaIntegration {
     constructor() {
         this.chatReady = false;
+        this.isSending = false; // Flag para prevenir envios duplicados
+        this.clickHandler = null; // Referência para o event handler
         this.init();
     }
 
@@ -13,21 +15,104 @@ class WatsonCineGamaIntegration {
         this.addCustomStyles();
     }
 
-    // Aguarda o Watson chat ficar disponível
-    waitForWatsonChat() {
-        const checkWatson = () => {
-            if (window.wxoLoader) {
-                this.chatReady = true;
-                console.log('🤖 Watson Orchestrate chat está pronto!');
-                this.setupWatsonIntegration();
-            } else {
-                setTimeout(checkWatson, 500);
-            }
-        };
-        checkWatson();
+    // Inicializa as interações
+    init() {
+        console.log('🎬 Inicializando WatsonIntegration...');
+        this.chatReady = false;
+        
+        // Aguarda Watson carregar
+        this.waitForWatsonLoad();
+        
+        // Um único event listener para todos os cliques
+        this.setupSingleClickHandler();
     }
 
-    // Configura interações da página
+    // Event listener único para evitar duplicação
+    setupSingleClickHandler() {
+        // Remove listeners anteriores se existirem
+        if (this.clickHandler) {
+            document.removeEventListener('click', this.clickHandler);
+        }
+        
+        // Cria o handler único
+        this.clickHandler = (e) => {
+            // Previne propagação para evitar múltiplos triggers
+            e.stopPropagation();
+            
+            // Verifica cards de filmes
+            const movieCard = e.target.closest('.movie-card');
+            if (movieCard) {
+                this.handleMovieCardClick(movieCard);
+                return;
+            }
+            
+            // Verifica cards de sessões
+            const sessionCard = e.target.closest('.session-card');
+            if (sessionCard) {
+                this.handleSessionCardClick(sessionCard);
+                return;
+            }
+            
+            // Verifica botão CTA
+            if (e.target.matches('.cta-button')) {
+                e.preventDefault();
+                this.handleCtaButtonClick();
+                return;
+            }
+            
+            // Verifica outros botões de ação
+            if (e.target.matches('.btn-primary, .buy-button, .info-button')) {
+                this.handleActionButtonClick(e.target);
+                return;
+            }
+        };
+        
+        // Registra o event listener único
+        document.addEventListener('click', this.clickHandler);
+        console.log('✅ Event listener único configurado');
+    }
+
+    // Gerencia clique em card de filme
+    handleMovieCardClick(movieCard) {
+        const title = movieCard.querySelector('.movie-title')?.textContent;
+        const genre = movieCard.querySelector('.movie-genre')?.textContent;
+        const rating = movieCard.querySelector('.movie-rating')?.textContent;
+        
+        if (title) {
+            console.log('🎬 Card de filme clicado:', title);
+            
+            const message = `Olá! Estou interessado no filme "${title}". Pode me dar mais informações sobre este filme, horários de sessões disponíveis e como comprar ingressos?`;
+            
+            console.log('📝 Mensagem que será enviada:', message);
+            this.sendToWatson(message);
+        }
+    }
+
+    // Gerencia clique em card de sessão
+    handleSessionCardClick(sessionCard) {
+        const time = sessionCard.querySelector('.session-time')?.textContent;
+        const room = sessionCard.querySelector('.session-room')?.textContent;
+        const price = sessionCard.querySelector('.session-price')?.textContent;
+        
+        if (time && room) {
+            console.log('🎪 Card de sessão clicado:', time, room);
+            const message = `Estou interessado na sessão das ${time} na ${room}${price ? ` por ${price}` : ''}. Como posso comprar ingresso?`;
+            this.sendToWatson(message);
+        }
+    }
+
+    // Gerencia clique no botão CTA
+    handleCtaButtonClick() {
+        console.log('🎯 Botão CTA clicado');
+        this.sendToWatson('Quais filmes vocês têm em cartaz hoje? Quero ver os horários e preços.');
+    }
+
+    // Gerencia outros botões de ação
+    handleActionButtonClick(button) {
+        console.log('🔘 Botão de ação clicado:', button);
+        const context = this.getContextFromElement(button);
+        this.sendToWatson(`${context} Como posso comprar ingresso?`);
+    }    // Configura interações da página
     setupPageInteractions() {
         // Interação com cards de filmes
         this.setupMovieCardInteractions();
@@ -120,6 +205,13 @@ class WatsonCineGamaIntegration {
 
     // Envia mensagem para o Watson
     sendToWatson(message) {
+        // Previne envios duplicados
+        if (this.isSending) {
+            console.log('⚠️ Já está enviando uma mensagem, ignorando duplicata');
+            return;
+        }
+        
+        this.isSending = true;
         console.log('🎬 Enviando para Watson:', message);
         console.log('🤖 Configuração Watson:', window.wxOConfiguration);
         
@@ -138,6 +230,7 @@ class WatsonCineGamaIntegration {
             // Fallback final
             setTimeout(() => {
                 this.simulateUserInput(message);
+                this.isSending = false;
             }, 3000);
         }
     }
