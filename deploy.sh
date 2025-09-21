@@ -85,6 +85,13 @@ setup_registry() {
         ibmcloud cr namespace-add $REGISTRY_NAMESPACE
     fi
     
+    # Criar registry secret no Code Engine se não existir
+    if ! ibmcloud ce secret list | grep -q "icr-secret"; then
+        log_info "Criando registry secret..."
+        ibmcloud ce secret create --name icr-secret --from-literal username=iamapikey --from-literal password=$IBM_CLOUD_API_KEY --from-literal server=us.icr.io
+        ibmcloud ce registry create --name icr-secret --server us.icr.io --username iamapikey --password $IBM_CLOUD_API_KEY
+    fi
+    
     log_success "Container Registry configurado"
 }
 
@@ -145,19 +152,37 @@ deploy_frontend() {
     
     cd frontend/
     
+    # Verificar se os arquivos necessários existem
+    if [ ! -f "index.html" ]; then
+        log_error "Arquivo index.html não encontrado!"
+        exit 1
+    fi
+    
+    if [ ! -f "nginx.conf" ]; then
+        log_error "Arquivo nginx.conf não encontrado!"
+        exit 1
+    fi
+    
     # Build da imagem
     log_info "Building frontend image..."
-    docker build -t us.icr.io/$REGISTRY_NAMESPACE/$FRONTEND_APP_NAME:latest .
+    if ! docker build -t us.icr.io/$REGISTRY_NAMESPACE/$FRONTEND_APP_NAME:latest .; then
+        log_error "Falha no build da imagem do frontend!"
+        exit 1
+    fi
     
     # Push da imagem
     log_info "Pushing frontend image..."
-    docker push us.icr.io/$REGISTRY_NAMESPACE/$FRONTEND_APP_NAME:latest
+    if ! docker push us.icr.io/$REGISTRY_NAMESPACE/$FRONTEND_APP_NAME:latest; then
+        log_error "Falha no push da imagem do frontend!"
+        exit 1
+    fi
     
     # Deploy ou atualizar aplicação
     if ibmcloud ce application list | grep -q $FRONTEND_APP_NAME; then
         log_info "Atualizando aplicação frontend..."
         ibmcloud ce application update $FRONTEND_APP_NAME \
-            --image us.icr.io/$REGISTRY_NAMESPACE/$FRONTEND_APP_NAME:latest
+            --image us.icr.io/$REGISTRY_NAMESPACE/$FRONTEND_APP_NAME:latest \
+            --port 8080
     else
         log_info "Criando aplicação frontend..."
         ibmcloud ce application create \
