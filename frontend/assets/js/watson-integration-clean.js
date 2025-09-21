@@ -251,8 +251,15 @@ class WatsonCineGamaIntegration {
                     
                     // Tenta encontrar e clicar no botão de enviar
                     setTimeout(() => {
-                        this.clickSendButton();
-                    }, 200);
+                        console.log('🚀 Tentando enviar mensagem...');
+                        const success = this.clickSendButton();
+                        if (!success) {
+                            console.log('⚠️ Falha no envio automático - aguardando 2s e tentando novamente...');
+                            setTimeout(() => {
+                                this.clickSendButton();
+                            }, 2000);
+                        }
+                    }, 500);
                     
                     console.log('✅ Mensagem digitada com sucesso!');
                     this.isSending = false;
@@ -268,28 +275,240 @@ class WatsonCineGamaIntegration {
     }
 
     clickSendButton() {
-        const sendSelectors = [
-            'button[type="submit"]',
-            'button[aria-label*="send"]',
-            'button[aria-label*="enviar"]',
-            '[data-testid*="send"]',
-            '.send-button',
-            '.wxo-send',
-            'button:has(svg)',
-            'button:last-of-type'
-        ];
+        console.log('🔍 Procurando botão de enviar...');
         
-        for (const selector of sendSelectors) {
-            const button = document.querySelector(selector);
-            if (button && !button.disabled) {
-                console.log('🔴 Clicando no botão de enviar:', selector);
-                button.click();
-                return true;
+        // Debug para ver o que temos disponível
+        this.debugChatElements();
+        
+        // Primeiro, procura no documento principal
+        let button = this.findSendButtonInDocument(document);
+        if (button) {
+            console.log('✅ Botão encontrado no documento principal');
+            return this.attemptClick(button);
+        }
+        
+        // Depois, procura no iframe se existir
+        const iframe = document.querySelector('#root iframe');
+        if (iframe && iframe.contentDocument) {
+            console.log('🔍 Procurando no iframe...');
+            button = this.findSendButtonInDocument(iframe.contentDocument);
+            if (button) {
+                console.log('✅ Botão encontrado no iframe');
+                return this.attemptClick(button);
             }
         }
         
-        console.log('⚠️ Botão de enviar não encontrado');
+        // Método alternativo: procura qualquer botão próximo ao input
+        button = this.findNearbyButton();
+        if (button) {
+            console.log('✅ Botão próximo encontrado');
+            return this.attemptClick(button);
+        }
+        
+        // Último recurso: simula Enter no input ativo
+        console.log('⚠️ Botão não encontrado, tentando Enter...');
+        return this.simulateEnterKey();
+    }
+
+    findSendButtonInDocument(doc) {
+        const sendSelectors = [
+            // Seletores específicos do Watson
+            '[data-testid="send-button"]',
+            '[data-testid*="send"]',
+            '[aria-label*="send"]', 
+            '[aria-label*="enviar"]',
+            '[aria-label*="Send"]',
+            '[aria-label*="Enviar"]',
+            
+            // Seletores genéricos
+            'button[type="submit"]',
+            'button:has(svg[data-icon="send"])',
+            'button:has(svg[data-icon="paper-plane"])',
+            'button:has([data-icon*="send"])',
+            
+            // Por posição/conteúdo
+            'button:last-of-type',
+            'button:has(svg):not([disabled])',
+            'button[class*="send"]',
+            'button[class*="Submit"]',
+            
+            // Seletores do Watson Orchestrate
+            '.wxo-send-button',
+            '.wxo-chat-send',
+            '[class*="send-button"]',
+            '[class*="chat-send"]'
+        ];
+        
+        for (const selector of sendSelectors) {
+            try {
+                const button = doc.querySelector(selector);
+                if (button && !button.disabled && this.isVisibleButton(button)) {
+                    console.log('🎯 Botão válido encontrado:', selector);
+                    return button;
+                }
+            } catch (e) {
+                // Ignora erros de seletor
+            }
+        }
+        
+        return null;
+    }
+
+    isVisibleButton(button) {
+        const style = window.getComputedStyle(button);
+        return style.display !== 'none' && 
+               style.visibility !== 'hidden' && 
+               style.opacity !== '0' &&
+               button.offsetWidth > 0 && 
+               button.offsetHeight > 0;
+    }
+
+    findNearbyButton() {
+        // Procura input ativo primeiro
+        const activeInput = document.activeElement;
+        if (activeInput && (activeInput.tagName === 'INPUT' || activeInput.tagName === 'TEXTAREA')) {
+            
+            // Procura botão no mesmo container
+            const container = activeInput.closest('form, div, section');
+            if (container) {
+                const button = container.querySelector('button:not([disabled])');
+                if (button && this.isVisibleButton(button)) {
+                    console.log('🎯 Botão no container encontrado');
+                    return button;
+                }
+            }
+            
+            // Procura próximo elemento que seja botão
+            let sibling = activeInput.nextElementSibling;
+            while (sibling) {
+                if (sibling.tagName === 'BUTTON' && !sibling.disabled) {
+                    console.log('🎯 Botão irmão encontrado');
+                    return sibling;
+                }
+                if (sibling.querySelector) {
+                    const childButton = sibling.querySelector('button:not([disabled])');
+                    if (childButton && this.isVisibleButton(childButton)) {
+                        console.log('🎯 Botão filho encontrado');
+                        return childButton;
+                    }
+                }
+                sibling = sibling.nextElementSibling;
+            }
+        }
+        
+        return null;
+    }
+
+    attemptClick(button) {
+        try {
+            console.log('🖱️ Tentando clicar no botão:', button.outerHTML.substring(0, 100));
+            
+            // Múltiplas tentativas de clique
+            button.focus();
+            
+            // Clique direto
+            button.click();
+            
+            // Event listener click
+            button.dispatchEvent(new MouseEvent('click', {
+                bubbles: true,
+                cancelable: true,
+                view: window
+            }));
+            
+            // Clique com coordenadas
+            const rect = button.getBoundingClientRect();
+            button.dispatchEvent(new MouseEvent('click', {
+                bubbles: true,
+                cancelable: true,
+                clientX: rect.left + rect.width / 2,
+                clientY: rect.top + rect.height / 2
+            }));
+            
+            console.log('✅ Clique executado com sucesso!');
+            return true;
+            
+        } catch (error) {
+            console.error('❌ Erro ao clicar:', error);
+            return false;
+        }
+    }
+
+    simulateEnterKey() {
+        try {
+            const activeElement = document.activeElement;
+            if (activeElement) {
+                console.log('⌨️ Simulando Enter no elemento ativo...');
+                
+                // Múltiplos tipos de evento Enter
+                const enterEvents = [
+                    new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', bubbles: true }),
+                    new KeyboardEvent('keypress', { key: 'Enter', code: 'Enter', bubbles: true }),
+                    new KeyboardEvent('keyup', { key: 'Enter', code: 'Enter', bubbles: true })
+                ];
+                
+                enterEvents.forEach(event => {
+                    activeElement.dispatchEvent(event);
+                });
+                
+                // Também tenta no form pai
+                const form = activeElement.closest('form');
+                if (form) {
+                    form.dispatchEvent(new Event('submit', { bubbles: true }));
+                }
+                
+                console.log('✅ Eventos Enter simulados');
+                return true;
+            }
+        } catch (error) {
+            console.error('❌ Erro ao simular Enter:', error);
+        }
+        
         return false;
+    }
+
+    // Função de debug para ver elementos disponíveis
+    debugChatElements() {
+        console.log('🔬 === DEBUG: Elementos do Chat ===');
+        
+        // Mostra todos os botões
+        const buttons = document.querySelectorAll('button');
+        console.log('🔘 Botões encontrados:', buttons.length);
+        buttons.forEach((btn, i) => {
+            if (i < 10) { // Limita a 10 para não poluir
+                console.log(`Botão ${i}:`, {
+                    text: btn.textContent?.trim(),
+                    disabled: btn.disabled,
+                    classes: btn.className,
+                    type: btn.type,
+                    ariaLabel: btn.getAttribute('aria-label'),
+                    visible: this.isVisibleButton(btn)
+                });
+            }
+        });
+        
+        // Mostra inputs
+        const inputs = document.querySelectorAll('input, textarea');
+        console.log('📝 Inputs encontrados:', inputs.length);
+        inputs.forEach((input, i) => {
+            console.log(`Input ${i}:`, {
+                type: input.type,
+                placeholder: input.placeholder,
+                value: input.value?.substring(0, 50),
+                active: input === document.activeElement
+            });
+        });
+        
+        // Mostra iframe
+        const iframe = document.querySelector('#root iframe');
+        if (iframe) {
+            console.log('🖼️ Iframe encontrado:', {
+                src: iframe.src,
+                hasContentDocument: !!iframe.contentDocument
+            });
+        }
+        
+        console.log('🔬 === FIM DEBUG ===');
     }
 
     triggerWatsonWithEvent(message) {
