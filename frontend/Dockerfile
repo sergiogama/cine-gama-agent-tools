@@ -15,6 +15,7 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 # Copy static files directly
 COPY index.html /usr/share/nginx/html/
 COPY assets/ /usr/share/nginx/html/assets/
+COPY images/ /usr/share/nginx/html/images/
 
 # Create a simple health check file
 RUN echo "healthy" > /usr/share/nginx/html/health
