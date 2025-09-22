@@ -1,0 +1,130 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "ISB Cinema - Mail Service",
+    "version": "1.0.1",
+    "description": "Envia um e-mail de confirmação de compra de ingressos, ou de cancelamento, ou de lista de filmes, sessões, ou de detalhes solicitados pelo cliente. Formatar o corpo do e-mail no padrão markdown, como no gituhub."
+  },
+  "servers": [
+    { "url": "https://node-red.sergiogama.com/", "description": "Host do Node-RED" }
+  ],
+  "paths": {
+    "/isb/mail": {
+      "post": {
+        "tags": ["mail"],
+        "operationId": "enviar_e_mail",
+        "summary": "Enviar e-mail",
+        "description": "Envia um e-mail de confirmação de compra de ingressos, ou de cancelamento, ou de lista de filmes, sessões, ou de detalhes solicitados pelo cliente.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/MailRequest" },
+              "examples": {
+                "basico": {
+                  "summary": "Exemplo básico",
+                  "value": {
+                    "to": "cliente@example.com",
+                    "subject": "Confirmação da compra - Cinema",
+                    "body": "Olá! Sua compra para o filme 'Duna 2' às 20:30 foi confirmada. Pedido #12345."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "E-mail aceito para envio",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MailResponse" },
+                "examples": {
+                  "ok": { "value": { "status": "e-Mail enviado" } }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro de validação (campos ausentes ou inválidos)",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" },
+                "examples": {
+                  "missingSubject": {
+                    "value": {
+                      "error": "invalid_request",
+                      "message": "Campo 'subject' é obrigatório."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Falha ao enviar e-mail (ex.: SMTP indisponível)",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" },
+                "examples": {
+                  "smtpDown": {
+                    "value": {
+                      "error": "smtp_error",
+                      "message": "Falha ao conectar ao servidor SMTP."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "MailRequest": {
+        "type": "object",
+        "required": ["to", "subject", "body"],
+        "properties": {
+          "to": {
+            "type": "string",
+            "format": "email",
+            "title": "Destinatário",
+            "description": "E-mail do cliente que receberá a confirmação."
+          },
+          "subject": {
+            "type": "string",
+            "title": "Assunto",
+            "description": "Assunto do e-mail.",
+            "example": "Confirmação da compra - Cinema"
+          },
+          "body": {
+            "type": "string",
+            "title": "Corpo do e-mail",
+            "description": "Mensagem de confirmação enviada ao cliente (pedido, horário, cinema, assentos etc).",
+            "example": "Olá! Sua compra para o filme 'Duna 2' às 20:30 foi confirmada. Pedido #12345."
+          }
+        }
+      },
+      "MailResponse": {
+        "type": "object",
+        "required": ["status"],
+        "properties": {
+          "status": { "type": "string", "description": "Mensagem de resultado do envio.", "example": "e-Mail enviado" }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": ["error", "message"],
+        "properties": {
+          "error": { "type": "string", "description": "Código do erro (ex.: invalid_request, smtp_error)." },
+          "message": { "type": "string", "description": "Descrição legível do erro." }
+        }
+      }
+    }
+  },
+  "tags": [
+    { "name": "mail", "description": "Operações de envio de e-mail de confirmação para o fluxo de compra de cinema." }
+  ]
+}

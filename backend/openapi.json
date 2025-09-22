@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "https://cine-gama-agent-tools.1ziw9aq991z6.us-south.codeengine.appdomain.cloud/",
+      "url": "https://application-77.1ziw9aq991z6.us-south.codeengine.appdomain.cloud/",
       "description": "Servidor de produção do Cine Gama"
     }
   ],
@@ -48,43 +48,6 @@
                   "items": { "$ref": "#/components/schemas/SessaoOut" },
                   "title": "Response Listar Sessoes Sessoes Get"
                 }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/sessoes/{filme_id}": {
-      "get": {
-        "summary": "Listar sessões de um filme específico",
-        "description": "Retorna todas as sessões disponíveis para um filme específico, incluindo horários, salas e disponibilidade de assentos.",
-        "operationId": "listar_sessoes_filme_sessoes__filme_id__get",
-        "parameters": [
-          {
-            "name": "filme_id",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "integer", "title": "Filme Id" }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": { "$ref": "#/components/schemas/SessaoOut" },
-                  "title": "Response Listar Sessoes Filme Sessoes  Filme Id  Get"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
               }
             }
           }
@@ -367,10 +330,9 @@
       "IngressoIn": {
         "type": "object",
         "title": "IngressoIn",
-        "required": ["cliente_id", "nome_cliente", "sessao_id"],
+        "required": ["cliente_id", "sessao_id"],
         "properties": {
           "cliente_id": { "type": "integer", "title": "Cliente Id" },
-          "nome_cliente": { "type": "string", "title": "Nome Cliente" },
           "sessao_id": { "type": "integer", "title": "Sessao Id" }
         }
       },
@@ -435,3 +397,4 @@
     }
   }
 }
+

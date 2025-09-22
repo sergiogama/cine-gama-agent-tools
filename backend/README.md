@@ -75,7 +75,7 @@ backend/
 
 ### Sessões
 - `GET /sessoes` - Lista todas as sessões
-- `GET /sessoes/filme/{filme_id}` - Sessões de um filme específico
+- `GET /filmes-com-sessoes` - Lista filmes com suas sessões detalhadas
 
 ### Clientes
 - `POST /cadastrar_cliente` - Cadastra novo cliente

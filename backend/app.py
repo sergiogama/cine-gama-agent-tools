@@ -80,7 +80,6 @@ class ClienteBuscaOut(BaseModel):
 
 class IngressoIn(BaseModel):
     cliente_id: int
-    nome_cliente: str
     sessao_id: int
 
 class IngressoOut(BaseModel):
@@ -132,37 +131,6 @@ def listar_sessoes(db: Session = Depends(get_db)):
     
     return resultado
 
-@app.get(
-    "/sessoes/{filme_id}",
-    response_model=list[SessaoOut],
-    summary="Listar sessões de um filme específico",
-    description="Retorna todas as sessões disponíveis para um filme específico, incluindo horários, salas e disponibilidade de assentos."
-)
-def listar_sessoes_filme(filme_id: int, db: Session = Depends(get_db)):
-    # Verifica se o filme existe
-    filme = db.query(Filme).filter(Filme.filme_id == filme_id).first()
-    if not filme:
-        raise HTTPException(status_code=404, detail="Filme não encontrado")
-    
-    sessoes = db.query(Sessao).filter(Sessao.filme_id == filme_id).all()
-    resultado = []
-    
-    for sessao in sessoes:
-        sessao_dict = {
-            "sessao_id": sessao.sessao_id,
-            "filme_id": sessao.filme_id,
-            "titulo_filme": filme.titulo,
-            "sala": sessao.sala,
-            "horario_inicio": sessao.horario_inicio,
-            "horario_fim": sessao.horario_fim,
-            "data_sessao": sessao.data_sessao,
-            "preco_ingresso": sessao.preco_ingresso,
-            "assentos_disponiveis": sessao.assentos_disponiveis,
-            "assentos_total": sessao.assentos_total
-        }
-        resultado.append(SessaoOut(**sessao_dict))
-    
-    return resultado
 
 @app.get(
     "/filmes-com-sessoes",
@@ -242,14 +210,15 @@ def listar_filmes_com_sessoes(db: Session = Depends(get_db)):
     "/comprar_ingresso",
     response_model=IngressoOut,
     summary="Comprar ingresso para uma sessão",
-    description="Compra um ingresso para uma sessão específica. Requer cliente_id, nome_cliente e sessao_id. Se a sessão tiver assentos disponíveis e o cliente existir, um novo ingresso é criado e o número de assentos disponíveis é decrementado. Retorna os detalhes do ingresso."
+    description="Compra um ingresso para uma sessão específica. Requer apenas cliente_id e sessao_id. Se a sessão tiver assentos disponíveis e o cliente existir, um novo ingresso é criado e o número de assentos disponíveis é decrementado. Retorna os detalhes do ingresso."
 )
 def comprar_ingresso(ingresso_data: IngressoIn, db: Session = Depends(get_db)):
-    # Verifica placeholders genéricos enviados pelo Agent
-    if ingresso_data.nome_cliente.lower() in ["seu nome", "nome do cliente"] or ingresso_data.cliente_id <= 0:
+    # Verifica se o cliente existe via query simples
+    cliente = db.query(Cliente).filter(Cliente.cliente_id == ingresso_data.cliente_id).first()
+    if not cliente:
         raise HTTPException(
             status_code=400,
-            detail="O cliente não existe e deve ser cadastrado com nome e e-mail."
+            detail="O cliente não existe e deve ser cadastrado antes de tentar comprar um ingresso."
         )
 
     # Verifica se a sessão existe
@@ -259,17 +228,6 @@ def comprar_ingresso(ingresso_data: IngressoIn, db: Session = Depends(get_db)):
     
     if sessao.assentos_disponiveis < 1:
         raise HTTPException(status_code=400, detail="Não há assentos disponíveis para esta sessão")
-    
-    # Verifica se o cliente existe
-    cliente = db.query(Cliente).filter(
-        Cliente.cliente_id == ingresso_data.cliente_id, 
-        Cliente.nome == ingresso_data.nome_cliente
-    ).first()
-    if not cliente:
-        raise HTTPException(
-            status_code=400,
-            detail="O cliente não existe e deve ser cadastrado antes de tentar comprar um ingresso."
-        )
     
     # Gera número do assento
     import random

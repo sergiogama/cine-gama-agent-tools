@@ -117,7 +117,7 @@ O sistema vem pré-populado com:
 
 ### Sessões  
 - `GET /sessoes` - Lista todas as sessões
-- `GET /sessoes/filme/{filme_id}` - Sessões de um filme
+- `GET /filmes-com-sessoes` - Filmes com suas sessões detalhadas
 
 ### Ingressos
 - `POST /comprar_ingresso` - Compra um ingresso
