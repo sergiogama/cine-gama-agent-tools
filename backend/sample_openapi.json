@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "https://cine-gama-agent-tools.1ziw9aq991z6.us-south.codeengine.appdomain.cloud",
+      "url": "https://cine-gama-agent-tools.1ziw9aq991z6.us-south.codeengine.appdomain.cloud/",
       "description": "Servidor de produção do Cine Gama"
     }
   ],
@@ -23,10 +23,8 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/FilmeOut"
-                  },
                   "type": "array",
+                  "items": { "$ref": "#/components/schemas/FilmeOut" },
                   "title": "Response Listar Filmes Filmes Get"
                 }
               }
@@ -46,10 +44,8 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/SessaoOut"
-                  },
                   "type": "array",
+                  "items": { "$ref": "#/components/schemas/SessaoOut" },
                   "title": "Response Listar Sessoes Sessoes Get"
                 }
               }
@@ -68,10 +64,7 @@
             "name": "filme_id",
             "in": "path",
             "required": true,
-            "schema": {
-              "type": "integer",
-              "title": "Filme Id"
-            }
+            "schema": { "type": "integer", "title": "Filme Id" }
           }
         ],
         "responses": {
@@ -81,9 +74,7 @@
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/SessaoOut"
-                  },
+                  "items": { "$ref": "#/components/schemas/SessaoOut" },
                   "title": "Response Listar Sessoes Filme Sessoes  Filme Id  Get"
                 }
               }
@@ -93,9 +84,7 @@
             "description": "Validation Error",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
               }
             }
           }
@@ -105,26 +94,30 @@
     "/comprar_ingresso": {
       "post": {
         "summary": "Comprar ingresso para uma sessão",
-        "description": "Compra um ingresso para uma sessão específica. Requer cliente_id, nome_cliente e sessao_id. Se a sessão tiver assentos disponíveis e o cliente existir, um novo ingresso é criado e o número de assentos disponíveis é decrementado. Retorna os detalhes do ingresso.",
+        "description": "Compra um ingresso para uma sessão específica. Requer cliente_id, nome_cliente e sessao_id. Se a sessão tiver assentos disponíveis e o cliente existir, um novo ingresso é criado e o número de assentos disponíveis é decrementado.",
         "operationId": "comprar_ingresso_comprar_ingresso_post",
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/IngressoIn"
+              "schema": { "$ref": "#/components/schemas/IngressoIn" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Ingresso criado",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/IngressoOut" }
               }
             }
           },
-          "required": true
-        },
-        "responses": {
           "200": {
-            "description": "Successful Response",
+            "description": "Successful Response (compat)",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/IngressoOut"
-                }
+                "schema": { "$ref": "#/components/schemas/IngressoOut" }
               }
             }
           },
@@ -132,9 +125,7 @@
             "description": "Validation Error",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
               }
             }
           }
@@ -151,10 +142,7 @@
             "name": "cliente_id",
             "in": "path",
             "required": true,
-            "schema": {
-              "type": "integer",
-              "title": "Cliente Id"
-            }
+            "schema": { "type": "integer", "title": "Cliente Id" }
           }
         ],
         "responses": {
@@ -164,9 +152,7 @@
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/IngressoOut"
-                  },
+                  "items": { "$ref": "#/components/schemas/IngressoOut" },
                   "title": "Response Listar Ingressos Cliente Ingressos  Cliente Id  Get"
                 }
               }
@@ -176,9 +162,7 @@
             "description": "Validation Error",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
               }
             }
           }
@@ -195,10 +179,7 @@
             "name": "ingresso_id",
             "in": "path",
             "required": true,
-            "schema": {
-              "type": "integer",
-              "title": "Ingresso Id"
-            }
+            "schema": { "type": "integer", "title": "Ingresso Id" }
           }
         ],
         "responses": {
@@ -206,9 +187,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/IngressoOut"
-                }
+                "schema": { "$ref": "#/components/schemas/IngressoOut" }
               }
             }
           },
@@ -216,9 +195,7 @@
             "description": "Validation Error",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
               }
             }
           }
@@ -231,23 +208,27 @@
         "description": "Cadastra um novo cliente com nome, email único e telefone opcional. Retorna os dados do cliente criado.",
         "operationId": "cadastrar_cliente_cadastrar_cliente_post",
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ClienteIn"
+              "schema": { "$ref": "#/components/schemas/ClienteIn" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Cliente criado",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ClienteOut" }
               }
             }
           },
-          "required": true
-        },
-        "responses": {
           "200": {
-            "description": "Successful Response",
+            "description": "Successful Response (compat)",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ClienteOut"
-                }
+                "schema": { "$ref": "#/components/schemas/ClienteOut" }
               }
             }
           },
@@ -255,9 +236,7 @@
             "description": "Validation Error",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
               }
             }
           }
@@ -266,27 +245,15 @@
     },
     "/buscar_cliente": {
       "get": {
-        "summary": "Buscar cliente por nome e email",
-        "description": "Busca informações de um cliente (incluindo cliente_id) fornecendo nome e email. Retorna 404 se não encontrado.",
+        "summary": "Buscar cliente por email",
+        "description": "Busca informações de um cliente fornecendo apenas o email. Sempre retorna status 200 com indicador de encontrado ou não encontrado.",
         "operationId": "buscar_cliente_buscar_cliente_get",
         "parameters": [
-          {
-            "name": "nome",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Nome"
-            }
-          },
           {
             "name": "email",
             "in": "query",
             "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Email"
-            }
+            "schema": { "type": "string", "format": "email", "title": "Email" }
           }
         ],
         "responses": {
@@ -294,9 +261,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ClienteOut"
-                }
+                "schema": { "$ref": "#/components/schemas/ClienteBuscaOut" }
               }
             }
           },
@@ -304,9 +269,7 @@
             "description": "Validation Error",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
               }
             }
           }
@@ -319,14 +282,7 @@
         "description": "Deleta todos os Ingressos e Clientes do banco de dados, mantendo Filmes e Sessões intactos.",
         "operationId": "reset_clientes_reset_clientes_delete",
         "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          }
+          "204": { "description": "Reset concluído (sem conteúdo)" }
         }
       }
     }
@@ -334,286 +290,147 @@
   "components": {
     "schemas": {
       "ClienteIn": {
-        "properties": {
-          "nome": {
-            "type": "string",
-            "title": "Nome"
-          },
-          "email": {
-            "type": "string",
-            "title": "Email"
-          },
-          "telefone": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Telefone"
-          }
-        },
         "type": "object",
-        "required": [
-          "nome",
-          "email"
-        ],
-        "title": "ClienteIn"
+        "title": "ClienteIn",
+        "required": ["nome", "email"],
+        "properties": {
+          "nome": { "type": "string", "title": "Nome" },
+          "email": { "type": "string", "format": "email", "title": "Email" },
+          "telefone": {
+            "title": "Telefone",
+            "anyOf": [ { "type": "string" }, { "type": "null" } ]
+          }
+        }
       },
       "ClienteOut": {
-        "properties": {
-          "cliente_id": {
-            "type": "integer",
-            "title": "Cliente Id"
-          },
-          "nome": {
-            "type": "string",
-            "title": "Nome"
-          },
-          "email": {
-            "type": "string",
-            "title": "Email"
-          },
-          "telefone": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Telefone"
-          }
-        },
         "type": "object",
-        "required": [
-          "cliente_id",
-          "nome",
-          "email"
-        ],
-        "title": "ClienteOut"
+        "title": "ClienteOut",
+        "required": ["cliente_id", "nome", "email"],
+        "properties": {
+          "cliente_id": { "type": "integer", "title": "Cliente Id" },
+          "nome": { "type": "string", "title": "Nome" },
+          "email": { "type": "string", "format": "email", "title": "Email" },
+          "telefone": {
+            "title": "Telefone",
+            "anyOf": [ { "type": "string" }, { "type": "null" } ]
+          }
+        }
+      },
+      "ClienteBuscaOut": {
+        "type": "object",
+        "title": "ClienteBuscaOut",
+        "required": ["status", "message"],
+        "properties": {
+          "status": { 
+            "type": "string", 
+            "title": "Status",
+            "description": "Indica se o cliente foi encontrado",
+            "enum": ["found", "not_found"]
+          },
+          "cliente": {
+            "title": "Cliente",
+            "anyOf": [ { "$ref": "#/components/schemas/ClienteOut" }, { "type": "null" } ]
+          },
+          "message": { 
+            "type": "string", 
+            "title": "Message",
+            "description": "Mensagem explicativa do resultado"
+          }
+        }
       },
       "FilmeOut": {
-        "properties": {
-          "filme_id": {
-            "type": "integer",
-            "title": "Filme Id"
-          },
-          "titulo": {
-            "type": "string",
-            "title": "Titulo"
-          },
-          "descricao": {
-            "type": "string",
-            "title": "Descricao"
-          },
-          "genero": {
-            "type": "string",
-            "title": "Genero"
-          },
-          "duracao_minutos": {
-            "type": "integer",
-            "title": "Duracao Minutos"
-          },
-          "classificacao_etaria": {
-            "type": "string",
-            "title": "Classificacao Etaria"
-          },
-          "diretor": {
-            "type": "string",
-            "title": "Diretor"
-          },
-          "ano_lancamento": {
-            "type": "integer",
-            "title": "Ano Lancamento"
-          }
-        },
         "type": "object",
-        "required": [
-          "filme_id",
-          "titulo",
-          "descricao",
-          "genero",
-          "duracao_minutos",
-          "classificacao_etaria",
-          "diretor",
-          "ano_lancamento"
-        ],
-        "title": "FilmeOut"
+        "title": "FilmeOut",
+        "required": ["filme_id", "titulo", "descricao", "genero", "duracao_minutos", "classificacao_etaria", "diretor", "ano_lancamento"],
+        "properties": {
+          "filme_id": { "type": "integer", "title": "Filme Id" },
+          "titulo": { "type": "string", "title": "Titulo" },
+          "descricao": { "type": "string", "title": "Descricao" },
+          "genero": { "type": "string", "title": "Genero" },
+          "duracao_minutos": { "type": "integer", "title": "Duracao Minutos" },
+          "classificacao_etaria": { "type": "string", "title": "Classificacao Etaria" },
+          "diretor": { "type": "string", "title": "Diretor" },
+          "ano_lancamento": { "type": "integer", "title": "Ano Lancamento" }
+        }
       },
       "HTTPValidationError": {
+        "type": "object",
+        "title": "HTTPValidationError",
         "properties": {
           "detail": {
-            "items": {
-              "$ref": "#/components/schemas/ValidationError"
-            },
             "type": "array",
-            "title": "Detail"
+            "title": "Detail",
+            "items": { "$ref": "#/components/schemas/ValidationError" }
           }
-        },
-        "type": "object",
-        "title": "HTTPValidationError"
+        }
       },
       "IngressoIn": {
-        "properties": {
-          "cliente_id": {
-            "type": "integer",
-            "title": "Cliente Id"
-          },
-          "nome_cliente": {
-            "type": "string",
-            "title": "Nome Cliente"
-          },
-          "sessao_id": {
-            "type": "integer",
-            "title": "Sessao Id"
-          }
-        },
         "type": "object",
-        "required": [
-          "cliente_id",
-          "nome_cliente",
-          "sessao_id"
-        ],
-        "title": "IngressoIn"
+        "title": "IngressoIn",
+        "required": ["cliente_id", "nome_cliente", "sessao_id"],
+        "properties": {
+          "cliente_id": { "type": "integer", "title": "Cliente Id" },
+          "nome_cliente": { "type": "string", "title": "Nome Cliente" },
+          "sessao_id": { "type": "integer", "title": "Sessao Id" }
+        }
       },
       "IngressoOut": {
-        "properties": {
-          "ingresso_id": {
-            "type": "integer",
-            "title": "Ingresso Id"
-          },
-          "cliente_id": {
-            "type": "integer",
-            "title": "Cliente Id"
-          },
-          "sessao_id": {
-            "type": "integer",
-            "title": "Sessao Id"
-          },
-          "status": {
-            "type": "string",
-            "title": "Status"
-          },
-          "data_compra": {
-            "type": "string",
-            "title": "Data Compra"
-          },
-          "numero_assento": {
-            "type": "string",
-            "title": "Numero Assento"
-          }
-        },
         "type": "object",
-        "required": [
-          "ingresso_id",
-          "cliente_id",
-          "sessao_id",
-          "status",
-          "data_compra",
-          "numero_assento"
-        ],
-        "title": "IngressoOut"
+        "title": "IngressoOut",
+        "required": ["ingresso_id", "cliente_id", "sessao_id", "status", "data_compra", "numero_assento"],
+        "properties": {
+          "ingresso_id": { "type": "integer", "title": "Ingresso Id" },
+          "cliente_id": { "type": "integer", "title": "Cliente Id" },
+          "sessao_id": { "type": "integer", "title": "Sessao Id" },
+          "status": { "type": "string", "title": "Status" },
+          "data_compra": { "type": "string", "format": "date-time", "title": "Data Compra" },
+          "numero_assento": { "type": "string", "title": "Numero Assento" }
+        }
       },
       "SessaoOut": {
-        "properties": {
-          "sessao_id": {
-            "type": "integer",
-            "title": "Sessao Id"
-          },
-          "filme_id": {
-            "type": "integer",
-            "title": "Filme Id"
-          },
-          "titulo_filme": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Titulo Filme"
-          },
-          "sala": {
-            "type": "string",
-            "title": "Sala"
-          },
-          "horario_inicio": {
-            "type": "string",
-            "title": "Horario Inicio"
-          },
-          "horario_fim": {
-            "type": "string",
-            "title": "Horario Fim"
-          },
-          "data_sessao": {
-            "type": "string",
-            "title": "Data Sessao"
-          },
-          "preco_ingresso": {
-            "type": "integer",
-            "title": "Preco Ingresso"
-          },
-          "assentos_disponiveis": {
-            "type": "integer",
-            "title": "Assentos Disponiveis"
-          },
-          "assentos_total": {
-            "type": "integer",
-            "title": "Assentos Total"
-          }
-        },
         "type": "object",
-        "required": [
-          "sessao_id",
-          "filme_id",
-          "sala",
-          "horario_inicio",
-          "horario_fim",
-          "data_sessao",
-          "preco_ingresso",
-          "assentos_disponiveis",
-          "assentos_total"
-        ],
-        "title": "SessaoOut"
+        "title": "SessaoOut",
+        "required": ["sessao_id", "filme_id", "sala", "horario_inicio", "horario_fim", "data_sessao", "preco_ingresso", "assentos_disponiveis", "assentos_total"],
+        "properties": {
+          "sessao_id": { "type": "integer", "title": "Sessao Id" },
+          "filme_id": { "type": "integer", "title": "Filme Id" },
+          "titulo_filme": {
+            "title": "Titulo Filme",
+            "anyOf": [ { "type": "string" }, { "type": "null" } ]
+          },
+          "sala": { "type": "string", "title": "Sala" },
+          "horario_inicio": { "type": "string", "format": "time", "title": "Horario Inicio" },
+          "horario_fim": { "type": "string", "format": "time", "title": "Horario Fim" },
+          "data_sessao": { "type": "string", "format": "date", "title": "Data Sessao" },
+          "preco_ingresso": { "type": "number", "title": "Preco Ingresso" },
+          "assentos_disponiveis": { "type": "integer", "title": "Assentos Disponiveis" },
+          "assentos_total": { "type": "integer", "title": "Assentos Total" }
+        }
       },
       "ValidationError": {
+        "type": "object",
+        "title": "ValidationError",
+        "required": ["loc", "msg", "type"],
         "properties": {
           "loc": {
-            "items": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "integer"
-                }
-              ]
-            },
             "type": "array",
-            "title": "Location"
+            "title": "Location",
+            "items": {
+              "anyOf": [ { "type": "string" }, { "type": "integer" } ]
+            }
           },
-          "msg": {
-            "type": "string",
-            "title": "Message"
-          },
-          "type": {
-            "type": "string",
-            "title": "Error Type"
-          }
-        },
+          "msg": { "type": "string", "title": "Message" },
+          "type": { "type": "string", "title": "Error Type" }
+        }
+      },
+      "ErrorResponse": {
         "type": "object",
-        "required": [
-          "loc",
-          "msg",
-          "type"
-        ],
-        "title": "ValidationError"
+        "title": "ErrorResponse",
+        "required": ["error", "message"],
+        "properties": {
+          "error": { "type": "string", "description": "Código do erro" },
+          "message": { "type": "string", "description": "Descrição legível do erro" }
+        }
       }
     }
   }
