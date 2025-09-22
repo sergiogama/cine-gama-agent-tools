@@ -73,6 +73,11 @@ class ClienteOut(BaseModel):
     class Config:
         orm_mode = True
 
+class ClienteBuscaOut(BaseModel):
+    status: str  # "found" ou "not_found"
+    cliente: Optional[ClienteOut] = None
+    message: str
+
 class IngressoIn(BaseModel):
     cliente_id: int
     nome_cliente: str
@@ -346,15 +351,25 @@ def cadastrar_cliente(cliente: ClienteIn, db: Session = Depends(get_db)):
 
 @app.get(
     "/buscar_cliente",
-    response_model=ClienteOut,
-    summary="Buscar cliente por nome e email",
-    description="Busca informações de um cliente (incluindo cliente_id) fornecendo nome e email. Retorna 404 se não encontrado."
+    response_model=ClienteBuscaOut,
+    summary="Buscar cliente por email",
+    description="Busca informações de um cliente fornecendo apenas o email. Sempre retorna status 200 com indicador de encontrado ou não encontrado."
 )
-def buscar_cliente(nome: str, email: str, db: Session = Depends(get_db)):
-    cliente = db.query(Cliente).filter(Cliente.nome == nome, Cliente.email == email).first()
-    if not cliente:
-        raise HTTPException(status_code=404, detail="Cliente não encontrado")
-    return cliente
+def buscar_cliente(email: str, db: Session = Depends(get_db)):
+    cliente = db.query(Cliente).filter(Cliente.email == email).first()
+    
+    if cliente:
+        return ClienteBuscaOut(
+            status="found",
+            cliente=ClienteOut.from_orm(cliente),
+            message="Cliente encontrado com sucesso"
+        )
+    else:
+        return ClienteBuscaOut(
+            status="not_found", 
+            cliente=None,
+            message="Cliente não encontrado com este email"
+        )
 
 @app.delete(
     "/reset_clientes",
