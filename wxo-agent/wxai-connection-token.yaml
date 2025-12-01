@@ -1,0 +1,32 @@
+spec_version: v1
+kind: connection
+app_id: watsonx-cine
+environments:
+    draft:  # in draft each person needs to provide their own basic credentials
+        kind: bearer
+        type: team
+        server_url: https://api.42072582.demos.ibm-ai-security.com/ibmwatsonx//ml/v1/text/chat?version=2023-10-25
+        app_config:
+            header:
+                Content-Type: application/json
+                Authorization: Bearer ${BEARER_TOKEN}  # BEARER_TOKEN is provided by the environment auth
+                Accept: application/json
+                x-alltrue-llm-endpoint-identifier: afirme_Erandi_test2_chatModel
+                x-alltrue-llm-base-url: https://us-south.ml.cloud.ibm.com
+                x-alltrue-llm-proxy-type: ibmwatsonx
+                api_key: <WATSONX_API_KEY>
+                watsonx_project_id: <WATSONX_PROJECT_ID>
+    live:
+        kind: bearer # note it's possible to auth different in the deployed live agent vs the draft agent
+        type: team
+        server_url: https://api.42072582.demos.ibm-ai-security.com/ibmwatsonx//ml/v1/text/chat?version=2023-10-25
+        app_config:
+            header:
+                Content-Type: application/json
+                Authorization: Bearer ${BEARER_TOKEN}  # BEARER_TOKEN is provided by the environment auth
+                Accept: application/json
+                x-alltrue-llm-endpoint-identifier: afirme_Erandi_test2_chatModel
+                x-alltrue-llm-base-url: https://us-south.ml.cloud.ibm.com
+                x-alltrue-llm-proxy-type: ibmwatsonx
+                api_key: <WATSONX_API_KEY>
+                watsonx_project_id: <WATSONX_PROJECT_ID>

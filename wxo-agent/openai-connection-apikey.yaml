@@ -1,0 +1,30 @@
+spec_version: v1
+kind: connection
+app_id: openai-gpt-5
+environments:
+    draft:  # in draft each person needs to provide their own basic credentials
+        kind: api_key
+        type: team
+        server_url: https://api.42072582.demos.ibm-ai-security.com/openai/v1/chat/completions
+        app_config:
+            header:
+                Content-Type: application/json
+                Authorization: Bearer <OPENAI_API_KEY>  # BEARER_TOKEN is provided by the environment auth
+                x-alltrue-llm-endpoint-identifier: IBM_Enablement OpenAI
+    live:
+        kind: api_key # note it's possible to auth different in the deployed live agent vs the draft agent
+        type: team
+        server_url: https://api.42072582.demos.ibm-ai-security.com/openai/v1/chat/completions
+        app_config:
+            header:
+                Content-Type: application/json
+                Authorization: Bearer <OPENAI_API_KEY>  # BEARER_TOKEN is provided by the environment auth
+                x-alltrue-llm-endpoint-identifier: Test
+
+
+
+# orchestrate connections import -f wxai-connection-apikey.yaml
+
+# orchestrate connections set-credentials -a watsonx \
+#  --env draft \
+#  --api-key theapikey

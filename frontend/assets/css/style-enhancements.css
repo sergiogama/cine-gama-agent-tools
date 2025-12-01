@@ -89,6 +89,13 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
+.movie-card--spotlight {
+  outline: 3px solid var(--cinema-secondary);
+  box-shadow: 0 0 0 4px rgba(15, 98, 254, 0.25), 0 12px 28px rgba(0, 0, 0, 0.35);
+  transform: translateY(-4px);
+  transition: outline var(--cds-transition-fast) ease, box-shadow var(--cds-transition-fast) ease, transform var(--cds-transition-fast) ease;
+}
+
 /* ========== ENHANCED SESSION CARDS ========== */
 .session-card::before {
   content: '';

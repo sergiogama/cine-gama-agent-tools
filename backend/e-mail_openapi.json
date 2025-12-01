@@ -9,7 +9,7 @@
     { "url": "https://node-red.sergiogama.com/", "description": "Host do Node-RED" }
   ],
   "paths": {
-    "/isb/mail": {
+    "/tools/email": {
       "post": {
         "tags": ["mail"],
         "operationId": "enviar_e_mail",

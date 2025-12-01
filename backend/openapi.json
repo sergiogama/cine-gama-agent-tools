@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "https://cine-gama-backend.1ziw9aq991z6.us-south.codeengine.appdomain.cloud/",
+      "url": "https://cine-gama.1m8k8tr2qf9b.us-east.codeengine.appdomain.cloud/",
       "description": "Servidor de produção do Cine Gama"
     }
   ],
@@ -98,7 +98,7 @@
     "/ingressos/{cliente_id}": {
       "get": {
         "summary": "Listar todos os ingressos de um cliente",
-        "description": "Retorna todos os ingressos de um cliente específico por cliente_id. Inclui status do ingresso, data de compra e número do assento.",
+        "description": "Retorna todos os ingressos de um cliente específico por cliente_id. Use este endpoint ANTES de tentar cancelar qualquer ingresso para verificar quais ingressos estão disponíveis. Inclui status do ingresso (ativo/cancelado), data de compra e número do assento. Essencial para fluxos de cancelamento.",
         "operationId": "listar_ingressos_cliente_ingressos__cliente_id__get",
         "parameters": [
           {
@@ -135,7 +135,7 @@
     "/cancelar_ingresso/{ingresso_id}": {
       "post": {
         "summary": "Cancelar um ingresso",
-        "description": "Cancela um ingresso existente pelo ingresso_id. Se o ingresso estiver ativo, seu status é alterado para 'cancelado' e o número de assentos disponíveis da sessão associada é incrementado. Retorna os detalhes do ingresso atualizado.",
+        "description": "Cancela um ingresso existente pelo ingresso_id. IMPORTANTE: Antes de usar este endpoint, sempre liste os ingressos do cliente usando GET /ingressos/{cliente_id} para verificar quais ingressos estão disponíveis. Se o ingresso estiver ativo, seu status é alterado para 'cancelado' e o número de assentos disponíveis da sessão associada é incrementado. Retorna erro 404 se o ingresso não existir. Retorna os detalhes do ingresso atualizado.",
         "operationId": "cancelar_ingresso_cancelar_ingresso__ingresso_id__post",
         "parameters": [
           {

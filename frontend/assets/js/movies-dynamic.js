@@ -293,6 +293,12 @@ class MovieRenderer {
 
     renderMovies(filmes) {
         this.container.innerHTML = filmes.map(filme => this.createMovieCard(filme)).join('');
+
+        document.dispatchEvent(
+            new CustomEvent('cine-gama:movies-rendered', {
+                detail: { filmes }
+            })
+        );
     }
 
     createMovieCard(filme) {
@@ -309,7 +315,7 @@ class MovieRenderer {
             `<div class="movie-poster-emoji">${filme.emoji_poster}</div>`;
         
         return `
-            <div class="movie-card" data-filme-id="${filme.filme_id}">
+            <div class="movie-card" data-filme-id="${filme.filme_id}" data-filme-title="${filme.titulo.replace(/"/g, '&quot;')}">
                 <div class="movie-poster">${posterContent}</div>
                 <div class="movie-info">
                     <h3 class="movie-title">${filme.titulo}</h3>

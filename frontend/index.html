@@ -14,7 +14,6 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@carbon/icons@11.27.0/lib/index.css">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
 </head>
-</head>
 <body>
     <!-- Scroll Progress Indicator -->
     <div class="scroll-indicator">
@@ -103,26 +102,28 @@
 
     <!-- Watson Orchestrate Script -->
     <script>
-        window.wxOConfiguration = {
-            orchestrationID: "20250515-0817-2486-8019-c55acc2aa9da_20250515-1932-5868-002f-259f7ce4a770",
-            hostURL: "https://dl.watson-orchestrate.ibm.com",
-            rootElementID: "root",
-            chatOptions: {
-                agentId: "08f27759-f6d2-4d77-9a0d-8741182738ed", 
-            }
-        };
-        setTimeout(function () {
-            const script = document.createElement('script');
-            script.src = `${window.wxOConfiguration.hostURL}/wxochat/wxoLoader.js?embed=true`;
-            script.addEventListener('load', function () {
-                wxoLoader.init();
-            });
-            document.head.appendChild(script);
-        }, 0);
+    window.wxOConfiguration = {
+        orchestrationID: "20250515-0817-2486-8019-c55acc2aa9da_20250515-1932-5868-002f-259f7ce4a770",
+        hostURL: "https://dl.watson-orchestrate.ibm.com",
+        rootElementID: "root",
+        chatOptions: {
+            agentId: "ebf0668e-bdcc-43d7-98a0-a0ebdf813151", 
+            agentEnvironmentId: "f0074cdb-7f63-4c0e-83e4-efc885ddb61d",
+        }
+    };
+    setTimeout(function () {
+        const script = document.createElement('script');
+        script.src = `${window.wxOConfiguration.hostURL}/wxochat/wxoLoader.js?embed=true`;
+        script.addEventListener('load', function () {
+            wxoLoader.init();
+        });
+        document.head.appendChild(script);
+    }, 0);                     
     </script>
 
     <!-- Scripts principais -->
     <script src="assets/js/movies-dynamic.js"></script>
     <script src="assets/js/main-enhanced.js"></script>
+    <script src="assets/js/chat-integration.js"></script>
 </body>
 </html>
