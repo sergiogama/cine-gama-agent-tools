@@ -47,10 +47,41 @@ cine-gama-agent-tools/
 │   ├── nginx.conf           # Configuração Nginx
 │   ├── Dockerfile           # Container frontend
 │   └── README.md            # Documentação frontend
+├── wxo-agent/                # Integração com Watsonx Orchestrate (agente + ferramentas)
+│   ├── agents/cine-gama.yaml             # Definição do agente
+│   ├── docker-compose.yml                # Stack completa (lite)
+│   ├── guardium-ai-add-openai.sh         # Script para registrar conexão/modelo OpenAI via Guardium AI
+│   ├── guardium-ai-openai.yaml           # Modelo customizado (placeholders)
+│   ├── openai-connection-apikey.yaml     # Conexão OpenAI (placeholders)
+│   ├── wxai-connection-token.yaml        # Conexão watsonx (placeholders)
+│   ├── server.env.example                # Exemplo de variáveis (copie para server.env)
+│   ├── deploy.sh / server.sh             # Automação de deploy/serviço
+│   └── requirements.txt                  # Dependências do agente
 ├── deploy.sh                # Script de deploy automatizado
 ├── setup.sh                 # Setup ambiente local
+├── update-github.sh         # Commit/push interativo (mensagem/tag via prompt)
 └── README.md                # Este arquivo
 ```
+
+## 🤖 Integração Watsonx Orchestrate
+
+1. Configure variáveis do agente:
+   - Copie `wxo-agent/server.env.example` para `wxo-agent/server.env` e preencha suas chaves (OpenAI, Twilio, IBM Cloud, etc.).
+   - Preencha placeholders de `wxo-agent/guardium-ai-openai.yaml` e `wxo-agent/openai-connection-apikey.yaml` com seu `OPENAI_API_KEY` e endpoint.
+   - Em `wxo-agent/wxai-connection-token.yaml`, informe `WATSONX_API_KEY` e `WATSONX_PROJECT_ID`.
+2. Registre conexão/modelo via Guardium AI:
+   ```bash
+   cd wxo-agent
+   ORCHESTRATE_ENV_ID=<seu_env_id> OPENAI_API_KEY=<sua_chave> ./guardium-ai-add-openai.sh
+   ```
+3. Suba a stack do agente (opcional, para ambiente local):
+   ```bash
+   cd wxo-agent
+   cp server.env.example server.env  # edite antes de subir
+   docker-compose up -d
+   ```
+
+> Os arquivos de exemplo usam placeholders; não commit suas chaves reais. O `.gitignore` já protege `wxo-agent/server.env`.
 
 ## 🚀 Setup Rápido
 
