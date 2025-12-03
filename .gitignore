@@ -105,4 +105,4 @@ README_old.md
 sample_openapi_old.json
 
 # SCript de atualização do Github
-./update-github.sh
+update-github.sh
