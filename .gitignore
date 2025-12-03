@@ -103,3 +103,6 @@ wxo-agent/server.env.local
 *_old.*
 README_old.md
 sample_openapi_old.json
+
+# SCript de atualização do Github
+./update_github.sh
