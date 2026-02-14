@@ -25,7 +25,7 @@ def seed():
         Cliente(nome="Gabriel Rodrigues", email="gabriel.rodrigues@email.com", telefone="(11) 99999-7777"),
         Cliente(nome="Helena Martins", email="helena.martins@email.com", telefone="(11) 99999-8888"),
         Cliente(nome="Igor Almeida", email="igor.almeida@email.com", telefone="(11) 99999-9999"),
-        Cliente(nome="Julia Fernandes", email="julia.fernandes@email.com", telefone="(11) 99999-0000"),
+        Cliente(nome="Sergio Gama", email="sergiogama@hotmail.com", telefone="(11) 94581-7571"),
     ]
     db.add_all(clientes)
     db.commit()
