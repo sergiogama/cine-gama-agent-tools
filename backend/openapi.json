@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "https://cine-gama.1m8k8tr2qf9b.us-east.codeengine.appdomain.cloud/",
+      "url": "https://app-name.1m8k8tr2qf9b.us-east.codeengine.appdomain.cloud/",
       "description": "Servidor de produção do Cine Gama"
     }
   ],
